@@ -4,6 +4,10 @@ import {
 } from '@pronotes/core';
 import { browserNavigation } from './lib/browser-navigation-adapter';
 import { cryptoWorkerClient } from './lib/crypto-worker-client';
+import {
+  LocalSimulatedAuthGateway,
+  LocalSimulatedSyncGateway,
+} from './lib/simulated-cloud-gateway';
 
 const {
   CreateStandardNote,
@@ -75,8 +79,9 @@ class CompositionRoot {
   public deleteTag!: domain.DeleteTag;
   public updateTag!: domain.UpdateTag;
 
-  public authGateway: infrastructure.FirebaseAuthGateway | null = null;
-  public syncGateway: infrastructure.FirestoreSyncGateway | null = null;
+  public authGateway: domain.AuthGateway | null = null;
+  public syncGateway: domain.SyncGateway | null = null;
+  public isCloudSimulated: boolean = true;
   public synchronizeNotes: domain.SynchronizeNotes | null = null;
   public signUp: domain.SignUp | null = null;
   public signIn: domain.SignIn | null = null;
@@ -107,9 +112,67 @@ class CompositionRoot {
     this.deleteTag = new DeleteTag(this.tagRepo, clock);
     this.updateTag = new UpdateTag(this.tagRepo, clock);
 
-    // Initialize Firebase if API key is configured
+    const connectivity: domain.ConnectivityMonitor = {
+      isOnline: () => (typeof navigator !== 'undefined' ? navigator.onLine : true),
+    };
+
+    const vaultCipherAdapter: domain.VaultCipher = {
+      createKdfParams: async () => {
+        const salt = new Uint8Array(16);
+        crypto.getRandomValues(salt);
+        const params = domain.createKdfParams(100_000, salt);
+        if (!params.ok) throw params.error;
+        return params.value;
+      },
+      unlock: async () => {},
+      lock: async () => {
+        await cryptoWorkerClient.lockVault();
+      },
+      isUnlocked: async () => cryptoWorkerClient.isUnlocked(),
+      encrypt: async (plaintext: Uint8Array, aad?: Uint8Array) => {
+        try {
+          const isUnlocked = await cryptoWorkerClient.isUnlocked();
+          if (!isUnlocked) return domain.err(new domain.VaultLockedError());
+          const text = domain.utf8Decode(plaintext);
+          const aadStr = aad ? domain.utf8Decode(aad) : undefined;
+          const res = await cryptoWorkerClient.encryptVaultItem(text, aadStr);
+          const blob: domain.EncryptedBlob = {
+            version: 1,
+            alg: 'AES-GCM',
+            iv: new Uint8Array(atob(res.iv).split('').map((c) => c.charCodeAt(0))),
+            ciphertext: new Uint8Array(atob(res.ciphertext).split('').map((c) => c.charCodeAt(0))),
+          };
+          return domain.ok(blob);
+        } catch {
+          return domain.err(new domain.VaultLockedError());
+        }
+      },
+      decrypt: async (blob: domain.EncryptedBlob, aad?: Uint8Array) => {
+        try {
+          const isUnlocked = await cryptoWorkerClient.isUnlocked();
+          if (!isUnlocked) return domain.err(new domain.VaultLockedError());
+          const ivBase64 = btoa(String.fromCharCode(...blob.iv));
+          const cipherBase64 = btoa(String.fromCharCode(...blob.ciphertext));
+          const aadStr = aad ? domain.utf8Decode(aad) : undefined;
+          const decryptedStr = await cryptoWorkerClient.decryptVaultItem(
+            {
+              version: 1,
+              iv: ivBase64,
+              ciphertext: cipherBase64,
+              salt: '',
+            },
+            aadStr,
+          );
+          return domain.ok(domain.utf8Encode(decryptedStr));
+        } catch {
+          return domain.err(new domain.DecryptionFailedError());
+        }
+      },
+    };
+
+    // Initialize Firebase if a valid API key is configured; otherwise use Local Simulated Cloud
     const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-    if (apiKey) {
+    if (apiKey && apiKey !== 'your-api-key') {
       const firebaseConfig: infrastructure.FirebaseConfig = {
         apiKey,
         authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
@@ -121,77 +184,24 @@ class CompositionRoot {
 
       const firebaseServices = initFirebase(firebaseConfig);
       this.authGateway = new FirebaseAuthGateway(firebaseServices.auth);
-      const connectivity: domain.ConnectivityMonitor = {
-        isOnline: () => (typeof navigator !== 'undefined' ? navigator.onLine : true),
-      };
-
-      const vaultCipherAdapter: domain.VaultCipher = {
-        createKdfParams: async () => {
-          const salt = new Uint8Array(16);
-          crypto.getRandomValues(salt);
-          const params = domain.createKdfParams(100_000, salt);
-          if (!params.ok) throw params.error;
-          return params.value;
-        },
-        unlock: async () => {},
-        lock: async () => {
-          await cryptoWorkerClient.lockVault();
-        },
-        isUnlocked: async () => cryptoWorkerClient.isUnlocked(),
-        encrypt: async (plaintext: Uint8Array, aad?: Uint8Array) => {
-          try {
-            const isUnlocked = await cryptoWorkerClient.isUnlocked();
-            if (!isUnlocked) return domain.err(new domain.VaultLockedError());
-            const text = domain.utf8Decode(plaintext);
-            const aadStr = aad ? domain.utf8Decode(aad) : undefined;
-            const res = await cryptoWorkerClient.encryptVaultItem(text, aadStr);
-            const blob: domain.EncryptedBlob = {
-              version: 1,
-              alg: 'AES-GCM',
-              iv: new Uint8Array(atob(res.iv).split('').map((c) => c.charCodeAt(0))),
-              ciphertext: new Uint8Array(atob(res.ciphertext).split('').map((c) => c.charCodeAt(0))),
-            };
-            return domain.ok(blob);
-          } catch {
-            return domain.err(new domain.VaultLockedError());
-          }
-        },
-        decrypt: async (blob: domain.EncryptedBlob, aad?: Uint8Array) => {
-          try {
-            const isUnlocked = await cryptoWorkerClient.isUnlocked();
-            if (!isUnlocked) return domain.err(new domain.VaultLockedError());
-            const ivBase64 = btoa(String.fromCharCode(...blob.iv));
-            const cipherBase64 = btoa(String.fromCharCode(...blob.ciphertext));
-            const aadStr = aad ? domain.utf8Decode(aad) : undefined;
-            const decryptedStr = await cryptoWorkerClient.decryptVaultItem(
-              {
-                version: 1,
-                iv: ivBase64,
-                ciphertext: cipherBase64,
-                salt: '',
-              },
-              aadStr,
-            );
-            return domain.ok(domain.utf8Encode(decryptedStr));
-          } catch {
-            return domain.err(new domain.DecryptionFailedError());
-          }
-        },
-      };
-
       this.syncGateway = new FirestoreSyncGateway({
         firestore: firebaseServices.firestore,
         noteRepo: this.noteRepo,
         tagRepo: this.tagRepo,
         connectivity,
       });
-
-      this.synchronizeNotes = new SynchronizeNotes(this.syncGateway, connectivity);
-      this.signUp = new SignUp(this.authGateway);
-      this.signIn = new SignIn(this.authGateway);
-      this.signOut = new SignOut(this.authGateway, vaultCipherAdapter);
-      this.getCurrentUser = new GetCurrentUser(this.authGateway);
+      this.isCloudSimulated = false;
+    } else {
+      this.authGateway = new LocalSimulatedAuthGateway();
+      this.syncGateway = new LocalSimulatedSyncGateway(this.noteRepo, this.tagRepo, connectivity);
+      this.isCloudSimulated = true;
     }
+
+    this.synchronizeNotes = new SynchronizeNotes(this.syncGateway, connectivity);
+    this.signUp = new SignUp(this.authGateway);
+    this.signIn = new SignIn(this.authGateway);
+    this.signOut = new SignOut(this.authGateway, vaultCipherAdapter);
+    this.getCurrentUser = new GetCurrentUser(this.authGateway);
   }
 }
 

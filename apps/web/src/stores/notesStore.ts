@@ -3,6 +3,11 @@ import * as Y from 'yjs';
 import { domain, YjsDocumentManager } from '@pronotes/core';
 import { compositionRoot, LOCAL_USER_ID } from '../composition-root';
 import { cryptoWorkerClient } from '../lib/crypto-worker-client';
+import { useAuthStore } from './authStore';
+
+const getEffectiveOwnerId = (): domain.UserId => {
+  return useAuthStore.getState().user?.id || LOCAL_USER_ID;
+};
 
 const { parseNoteId, toCrdtState, createVaultNote } = domain;
 
@@ -45,15 +50,26 @@ export const useNotesStore = create<NotesState>((set) => ({
 
   loadNotes: async () => {
     await compositionRoot.init();
-    const standardRes = await compositionRoot.listNotes.execute({ ownerId: LOCAL_USER_ID });
+    const ownerId = getEffectiveOwnerId();
+    const standardRes = await compositionRoot.listNotes.execute({ ownerId });
     const vaultNotes = compositionRoot.noteRepo
-      ? await compositionRoot.noteRepo.findVaultByOwner(LOCAL_USER_ID)
+      ? await compositionRoot.noteRepo.findVaultByOwner(ownerId)
       : [];
 
+    let unmigratedStd: domain.StandardNote[] = [];
+    let unmigratedVlt: domain.VaultNote[] = [];
+    if (ownerId !== LOCAL_USER_ID && compositionRoot.noteRepo) {
+      unmigratedStd = [...(await compositionRoot.noteRepo.findStandardByOwner(LOCAL_USER_ID))];
+      unmigratedVlt = [...(await compositionRoot.noteRepo.findVaultByOwner(LOCAL_USER_ID))];
+    }
+
     const standardNotes = standardRes.ok ? standardRes.value : [];
-    const allNotes: domain.Note[] = [...standardNotes, ...vaultNotes].sort(
-      (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-    );
+    const allNotes: domain.Note[] = [
+      ...standardNotes,
+      ...vaultNotes,
+      ...unmigratedStd,
+      ...unmigratedVlt,
+    ].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
     set({
       notes: allNotes,
@@ -89,7 +105,7 @@ export const useNotesStore = create<NotesState>((set) => ({
     }
 
     const createdRes = await compositionRoot.createStandardNote.execute({
-      ownerId: LOCAL_USER_ID,
+      ownerId: getEffectiveOwnerId(),
       title,
       tagIds,
       body: initialBody,
@@ -140,7 +156,7 @@ export const useNotesStore = create<NotesState>((set) => ({
 
     const newVaultNote = createVaultNote({
       id: newNoteId,
-      ownerId: LOCAL_USER_ID,
+      ownerId: getEffectiveOwnerId(),
       encryptedPayload: blob,
       now: new Date(),
     });

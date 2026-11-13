@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Shield, Lock, Unlock, Wifi, WifiOff, Tag as TagIcon, Plus, Trash2, Check, X } from 'lucide-react';
+import { FileText, Shield, Lock, Unlock, Wifi, WifiOff, Tag as TagIcon, Plus, Trash2, Check, X, Download } from 'lucide-react';
 import { Button } from '@pronotes/ui';
 import { useNotesStore } from '../stores/notesStore';
 import { useVaultStore } from '../stores/vaultStore';
 import { useTagsStore } from '../stores/tagsStore';
 import { useNavigationStore } from '../stores/navigationStore';
+import { useNetworkStore } from '../stores/networkStore';
+import { usePwaInstall } from '../hooks/usePwaInstall';
 import type { domain } from '@pronotes/core';
 
 interface SidebarProps {
@@ -27,7 +29,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
   const standardCount = notes.filter((n) => n.kind === 'standard').length;
   const vaultCount = notes.filter((n) => n.kind === 'vault').length;
 
-  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+  const { isOnline } = useNetworkStore();
+  const { isInstallable, installPwa } = usePwaInstall();
 
   const handleVaultClick = () => {
     if (!isUnlocked) {
@@ -200,6 +203,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
 
       {/* Footer Status and Quick Actions */}
       <div className="space-y-3 pt-4 border-t border-[#E8E4DE] dark:border-[#32323D]">
+        {isInstallable && (
+          <button
+            type="button"
+            onClick={installPwa}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-btn text-xs font-medium text-[#2F3A6B] dark:text-[#93A5F8] bg-[#E8ECFB] dark:bg-[#1E294A] hover:bg-[#DCE4F9] dark:hover:bg-[#283763] transition-colors"
+            title="Pronotes'u masaüstüne veya ana ekrana yükle"
+          >
+            <div className="flex items-center gap-2">
+              <Download className="w-3.5 h-3.5" />
+              <span>Uygulamayı Yükle</span>
+            </div>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-[#18181B] border border-[#D0D9F5] dark:border-[#2D3E70]">
+              PWA
+            </span>
+          </button>
+        )}
+
         <div className="flex items-center justify-between px-2 text-xs text-[#6B6B76] dark:text-[#A1A1AA]">
           <div className="flex items-center gap-1.5">
             {isOnline ? (

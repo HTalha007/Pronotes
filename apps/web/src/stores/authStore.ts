@@ -1,6 +1,22 @@
 import { create } from 'zustand';
 import { domain } from '@pronotes/core';
-import { compositionRoot } from '../composition-root';
+import { compositionRoot, LOCAL_USER_ID } from '../composition-root';
+import { useNotesStore } from './notesStore';
+import { useTagsStore } from './tagsStore';
+
+async function migrateLocalDataToUser(userId: domain.UserId) {
+  if (!compositionRoot.noteRepo || !compositionRoot.tagRepo) return;
+  const localStd = await compositionRoot.noteRepo.findStandardByOwner(LOCAL_USER_ID);
+  const localVlt = await compositionRoot.noteRepo.findVaultByOwner(LOCAL_USER_ID);
+  const localTags = await compositionRoot.tagRepo.findByOwner(LOCAL_USER_ID);
+
+  for (const n of [...localStd, ...localVlt]) {
+    await compositionRoot.noteRepo.save({ ...n, ownerId: userId });
+  }
+  for (const t of localTags) {
+    await compositionRoot.tagRepo.save({ ...t, ownerId: userId });
+  }
+}
 
 interface AuthState {
   user: domain.User | null;
@@ -59,7 +75,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return false;
     }
 
+    await migrateLocalDataToUser(res.value.id);
     set({ user: res.value, isLoading: false, error: null });
+    await useNotesStore.getState().loadNotes();
+    await useTagsStore.getState().loadTags();
     get().syncNow();
     return true;
   },
@@ -86,7 +105,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return false;
     }
 
+    await migrateLocalDataToUser(res.value.id);
     set({ user: res.value, isLoading: false, error: null });
+    await useNotesStore.getState().loadNotes();
+    await useTagsStore.getState().loadTags();
     get().syncNow();
     return true;
   },
@@ -97,6 +119,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await compositionRoot.signOut.execute();
     }
     set({ user: null, syncReport: null });
+    await useNotesStore.getState().loadNotes();
+    await useTagsStore.getState().loadTags();
   },
 
   syncNow: async () => {

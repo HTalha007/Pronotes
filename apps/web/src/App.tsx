@@ -7,6 +7,7 @@ import { VaultUnlockModal } from './components/VaultUnlockModal';
 import { AuthModal } from './components/AuthModal';
 import { SharedNoteViewer } from './components/SharedNoteViewer';
 import { ShortcutsHelpModal } from './components/ShortcutsHelpModal';
+import { OfflineBanner } from './components/OfflineBanner';
 import { parseSharedNoteFromUrl, SharedNoteData } from './lib/note-export';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotesStore } from './stores/notesStore';
@@ -185,6 +186,9 @@ export function App() {
           onOpenShortcutsHelp={() => setIsShortcutsHelpOpen(true)}
           searchInputRef={searchInputRef}
         />
+
+        {/* Offline / Reconnected Banner */}
+        <OfflineBanner />
 
         {/* Content Container */}
         <main className="flex-1 overflow-y-auto p-6">

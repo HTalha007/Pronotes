@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, Shield, Check, Tag as TagIcon, Palette, Share2 } from 'lucide-react';
+import { Trash2, Shield, Check, Tag as TagIcon, Palette, Share2, X, AlertTriangle } from 'lucide-react';
 import * as Y from 'yjs';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
+  DialogDescription,
   Button,
   Input,
   Badge,
@@ -44,7 +46,9 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   const [color, setColor] = useState<string>('#FFFFFF');
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const coordinatorRef = useRef<CrdtPersistenceCoordinator | null>(null);
   const unregisterLifecycleRef = useRef<(() => void) | null>(null);
   const titleRef = useRef(title);
@@ -257,56 +261,66 @@ export const NoteModal: React.FC<NoteModalProps> = ({
     <>
       <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && handleSave()}>
         <DialogContent
-        style={{ backgroundColor: isVault ? undefined : modalColor.bg }}
-        className="sm:max-w-2xl max-h-[90vh] flex flex-col p-6 transition-colors duration-200"
-      >
-        <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-[#E8E4DE] dark:border-[#3F3F4E]">
-          <div className="flex items-center gap-2">
-            {isVault ? (
-              <Badge variant="vault" className="gap-1.5">
-                <Shield className="w-3.5 h-3.5" />
-                Şifreli Kasa Notu
-              </Badge>
-            ) : (
-              <span className="text-xs text-[#6B6B76] dark:text-[#A1A1AA]">Standart Not</span>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsShareModalOpen(true)}
-              className="text-[#6B6B76] dark:text-[#A1A1AA] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0] hover:bg-[#F4F2EE] dark:hover:bg-[#282833]"
-              title="Paylaş veya Dışa Aktar"
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-            {note && (
+          showCloseButton={false}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            titleInputRef.current?.focus();
+          }}
+          style={{ backgroundColor: isVault ? undefined : modalColor.bg }}
+          className="sm:max-w-2xl max-h-[90vh] flex flex-col p-6 transition-colors duration-200"
+        >
+          <DialogHeader className="flex flex-row items-center justify-between pb-3 border-b border-[#E8E4DE] dark:border-[#3F3F4E]">
+            <div className="flex items-center gap-2">
+              {isVault ? (
+                <Badge variant="vault" className="gap-1.5 py-1 px-2.5">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Şifreli Kasa Notu</span>
+                </Badge>
+              ) : (
+                <Badge variant="subtle" className="text-xs text-[#6B6B76] dark:text-[#A1A1AA] py-1 px-2.5">
+                  Standart Not
+                </Badge>
+              )}
+
+              {/* Share button placed in header alongside badge, completely isolated from X */}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleDelete}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                title="Notu yerel veritabanından sil"
+                onClick={() => setIsShareModalOpen(true)}
+                className="w-10 h-10 min-w-[40px] min-h-[40px] text-[#6B6B76] dark:text-[#A1A1AA] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0] hover:bg-[#F4F2EE] dark:hover:bg-[#282833] focus-visible:ring-2 focus-visible:ring-[#2E2E38] dark:focus-visible:ring-[#EDEDF0] focus:outline-none transition-colors"
+                aria-label="Notu Paylaş veya Dışa Aktar"
+                title="Paylaş veya Dışa Aktar"
               >
-                <Trash2 className="w-4 h-4" />
+                <Share2 className="w-4 h-4" />
               </Button>
-            )}
-          </div>
-        </DialogHeader>
+            </div>
 
-        {isDecrypting ? (
-          <div className="py-12 text-center text-sm text-[#6B6B76] dark:text-[#A1A1AA]">
-            Kasa notu deşifre ediliyor...
-          </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto space-y-4 py-2">
-            <Input
-              placeholder="Başlık..."
-              value={title}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-              className="text-lg font-semibold bg-transparent border-0 px-0 focus:ring-0 placeholder:text-[#9A9AA2] dark:placeholder:text-[#71717A] text-[#2E2E38] dark:text-[#EDEDF0]"
-            />
+            {/* Close button ALONE in top-right corner, in exact line with header */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSave}
+              className="w-10 h-10 min-w-[40px] min-h-[40px] text-[#6B6B76] dark:text-[#A1A1AA] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0] hover:bg-[#F4F2EE] dark:hover:bg-[#282833] focus-visible:ring-2 focus-visible:ring-[#2E2E38] dark:focus-visible:ring-[#EDEDF0] focus:outline-none transition-colors"
+              aria-label="Notu Kaydet ve Kapat"
+              title="Kapat (Esc)"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </DialogHeader>
+
+          {isDecrypting ? (
+            <div className="py-12 text-center text-sm text-[#6B6B76] dark:text-[#A1A1AA]">
+              Kasa notu deşifre ediliyor...
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto space-y-4 py-2">
+              <Input
+                ref={titleInputRef}
+                placeholder="Başlık..."
+                value={title}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                className="text-lg font-semibold bg-transparent border-0 px-0 focus:ring-0 placeholder:text-[#9A9AA2] dark:placeholder:text-[#71717A] text-[#2E2E38] dark:text-[#EDEDF0]"
+              />
 
             {/* Tag selector chips for standard notes */}
             {!isVault && tags.length > 0 && (
@@ -382,10 +396,70 @@ export const NoteModal: React.FC<NoteModalProps> = ({
         )}
 
         <div className="flex items-center justify-between pt-4 border-t border-[#E8E4DE] dark:border-[#3F3F4E]">
-          <span className="text-xs text-[#9A9AA2] dark:text-[#71717A]">CRDT ile yerel IndexedDB'ye kaydedilir</span>
-          <Button onClick={handleSave} className="gap-1.5">
+          <div className="flex items-center gap-2">
+            {note && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="w-10 h-10 min-w-[40px] min-h-[40px] text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 focus-visible:ring-2 focus-visible:ring-red-500 focus:outline-none transition-colors"
+                aria-label="Notu Sil"
+                title="Notu Sil"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+            <span className="text-xs text-[#9A9AA2] dark:text-[#71717A]">
+              CRDT ile yerel IndexedDB'ye kaydedilir
+            </span>
+          </div>
+
+          <Button
+            onClick={handleSave}
+            className="gap-1.5 min-h-[40px] px-4 font-medium"
+            aria-label="Notu Kaydet ve Kapat"
+          >
             <Check className="w-4 h-4" />
-            Bitti
+            <span>Bitti</span>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog open={isDeleteDialogOpen} onOpenChange={(open: boolean) => setIsDeleteDialogOpen(open)}>
+      <DialogContent className="sm:max-w-sm p-6">
+        <DialogHeader className="items-center text-center">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 mb-2">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <DialogTitle className="text-base font-semibold text-[#2E2E38] dark:text-[#EDEDF0]">
+            Notu Silmek İstiyor Musunuz?
+          </DialogTitle>
+          <DialogDescription className="text-xs text-[#6B6B76] dark:text-[#A1A1AA] max-w-xs mt-1">
+            Bu işlem notu yerel IndexedDB veritabanından kalıcı olarak kaldıracaktır. Bu işlem geri alınamaz.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex justify-end gap-2 pt-4 border-t border-[#E8E4DE] dark:border-[#3F3F4E]">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setIsDeleteDialogOpen(false)}
+            className="min-h-[40px] px-4"
+            autoFocus
+          >
+            İptal
+          </Button>
+          <Button
+            type="button"
+            onClick={async () => {
+              setIsDeleteDialogOpen(false);
+              await handleDelete();
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white min-h-[40px] px-4"
+          >
+            Evet, Sil
           </Button>
         </div>
       </DialogContent>

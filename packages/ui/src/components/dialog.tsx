@@ -23,10 +23,15 @@ export const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+export interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  showCloseButton?: boolean;
+}
+
 export const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, showCloseButton = true, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -38,10 +43,15 @@ export const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-btn p-1 text-[#6B6B76] dark:text-[#A1A1AA] hover:bg-[#F4F2EE] dark:hover:bg-[#282833] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0] transition-colors focus:outline-none">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Kapat</span>
-      </DialogPrimitive.Close>
+      {showCloseButton && (
+        <DialogPrimitive.Close
+          aria-label="Kapat"
+          className="absolute right-4 top-4 rounded-btn p-2 text-[#6B6B76] dark:text-[#A1A1AA] hover:bg-[#F4F2EE] dark:hover:bg-[#282833] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0] transition-colors focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Kapat</span>
+        </DialogPrimitive.Close>
+      )}
     </DialogPrimitive.Content>
   </DialogPortal>
 ));

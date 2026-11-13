@@ -6,8 +6,10 @@ import {
   DialogHeader,
   Button,
   Input,
+  Badge,
 } from '@pronotes/ui';
 import { useAuthStore } from '../stores/authStore';
+import { compositionRoot } from '../composition-root';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -44,32 +46,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <DialogContent className="sm:max-w-md p-6">
-        <DialogHeader className="flex flex-row items-center justify-between pb-3 border-b border-[#E8E4DE]">
+        <DialogHeader className="flex flex-row items-center justify-between pb-3 border-b border-[#E8E4DE] dark:border-[#3F3F4E]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#E8ECFB] flex items-center justify-center text-[#2F3A6B]">
+            <div className="w-8 h-8 rounded-full bg-[#E8ECFB] dark:bg-[#1E294A] flex items-center justify-center text-[#2F3A6B] dark:text-[#93A5F8]">
               <Cloud className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#2E2E38]">
+              <h2 className="text-sm font-semibold text-[#2E2E38] dark:text-[#EDEDF0]">
                 {isSignUp ? 'Hesap Oluştur & Senkronize Et' : 'Oturum Aç & Senkronize Et'}
               </h2>
-              <p className="text-[11px] text-[#6B6B76]">
+              <p className="text-[11px] text-[#6B6B76] dark:text-[#A1A1AA]">
                 Notlarınıza tüm cihazlarınızdan güvenle erişin
               </p>
             </div>
           </div>
+          <Badge variant="subtle" className="text-[10px] font-mono">
+            {compositionRoot.isCloudSimulated ? 'Simülasyon Modu' : 'Firebase Cloud'}
+          </Badge>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-600 flex items-start gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded text-xs text-red-600 dark:text-red-300 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[#2E2E38]">E-posta Adresi</label>
+            <label className="text-xs font-medium text-[#2E2E38] dark:text-[#EDEDF0]">E-posta Adresi</label>
             <Input
               type="email"
               placeholder="ornek@alanadi.com"
@@ -82,7 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[#2E2E38]">Şifre</label>
+            <label className="text-xs font-medium text-[#2E2E38] dark:text-[#EDEDF0]">Şifre</label>
             <Input
               type="password"
               placeholder="En az 8 karakter..."
@@ -111,7 +116,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={handleToggleMode}
-              className="text-xs text-[#2F3A6B] hover:underline text-center pt-1"
+              className="text-xs text-[#2F3A6B] dark:text-[#93A5F8] hover:underline text-center pt-1"
             >
               {isSignUp
                 ? 'Zaten bir hesabınız var mı? Giriş yapın'
