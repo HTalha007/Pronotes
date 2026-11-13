@@ -1,8 +1,8 @@
-# Not Uygulaması (MVP) – Ürün ve Mühendislik Dokümantasyonu
+# Not Uygulaması – Ürün ve Mühendislik Dokümantasyonu
 
-> **Sürüm:** v1.0 (MVP)
+> **Sürüm:** v1.1 (PWA & Enhanced Note Experience)
 > **Kaynak dokümanlar:** `requirements.md`, `mvp_scope.md`, `system_design.md`, `tech_stack.md`, `acceptance_criteria.md`
-> **Amaç:** Beş ayrı dokümanı tek bir referans noktasında toplamak; ürün vizyonu ile MVP kapsamı arasındaki farkı, mimariyi, teknoloji seçimlerini, kabul kriterlerini ve açık kararları net biçimde göstermek.
+> **Amaç:** Ürün vizyonu, mimari, teknoloji seçimleri, kabul kriterleri, v1.1 özellikleri ve teknik kararları tek bir güvenilir referans noktasında toplamak.
 
 ---
 
@@ -11,16 +11,16 @@
 1. [Ürün Özeti](#1-ürün-özeti)
 2. [Hedef Kullanıcılar](#2-hedef-kullanıcılar)
 3. [MVP Kapsamı (MoSCoW)](#3-mvp-kapsamı-moscow)
-4. [Fonksiyonel Gereksinimler ve MVP Durumu](#4-fonksiyonel-gereksinimler-ve-mvp-durumu)
-5. [Fonksiyonel Olmayan Gereksinimler ve MVP Durumu](#5-fonksiyonel-olmayan-gereksinimler-ve-mvp-durumu)
+4. [Fonksiyonel Gereksinimler ve Gerçekleşme Durumu](#4-fonksiyonel-gereksinimler-ve-gerçekleşme-durumu)
+5. [Fonksiyonel Olmayan Gereksinimler](#5-fonksiyonel-olmayan-gereksinimler)
 6. [Sistem Mimarisi](#6-sistem-mimarisi)
 7. [Teknoloji Yığını](#7-teknoloji-yığını)
 8. [Güvenlik Modeli (E2EE Kasa)](#8-güvenlik-modeli-e2ee-kasa)
-9. [Kabul Kriterleri ve Test Kontrol Listesi](#9-kabul-kriterleri-ve-test-kontrol-listesi)
+9. [Kabul Kriterleri ve Test Doğrulama Durumu](#9-kabul-kriterleri-ve-test-doğrulama-durumu)
 10. [Başarı Metrikleri](#10-başarı-metrikleri)
-11. [UI/UX İlkeleri](#11-uiux-ilkeleri)
+11. [UI/UX İlkeleri ve Güvenli Etkileşim](#11-uiux-ilkeleri-ve-güvenli-etkileşim)
 12. [Yol Haritası](#12-yol-haritası)
-13. [Dokümanlar Arası Tutarsızlıklar ve Açık Sorular](#13-dokümanlar-arası-tutarsızlıklar-ve-açık-sorular)
+13. [Çözümlenen Teknik Kararlar ve v2.0 Vizyonu](#13-çözümlenen-teknik-kararlar-ve-v20-vizyonu)
 14. [Sözlük](#14-sözlük)
 
 ---
@@ -28,61 +28,75 @@
 ## 1. Ürün Özeti
 
 ### 1.1 Uzun Vadeli Vizyon
-Günlük kullanıcılar için Google Keep sadeliğinde başlayan; "Power User" ve ekipler için zengin metin düzenleme (Markdown), Uçtan Uca Şifreli (E2EE) Kasa, CRDT tabanlı çevrimdışı çalışma ve gerçek zamanlı ortak çalışma sunan bir üretkenlik platformu.
+Günlük kullanıcılar için Google Keep sadeliğinde başlayan; "Power User" ve ekipler için zengin metin düzenleme (Markdown), Uçtan Uca Şifreli (E2EE) Kasa, CRDT tabanlı çevrimdışı çalışma ve gerçek zamanlı senkronizasyon sunan modern bir üretkenlik platformu.
 
-**İş modeli (vizyon):** Bireysel kullanıcılar için Freemium SaaS, kurumsal tarafta B2B (takım lisanslama).
-
-### 1.2 MVP Ürün Hedefi
-> **"Sade Arayüz, Güçlü Markdown ve Uçtan Uca Şifreli Gizli Kasa"** sunan; bireysel odaklı, çevrimdışı çalışabilen, web tabanlı bir not uygulaması.
-
-MVP'de **paradan çok ürün-pazar uyumu (Product-Market Fit)** kanıtlanmak istenir. Rekabet avantajının çekirdeği **Şifreli Kasa**'dır.
+### 1.2 Ürün Hedefi (v1.1)
+> **"Sade Arayüz, Güçlü Markdown ve Uçtan Uca Şifreli Gizli Kasa"** sunan; bireysel odaklı, çevrimdışı tam yetenekli (Offline-First PWA), masaüstü ve mobil ana ekrana kurulabilir, modern web tabanlı not uygulaması.
 
 ### 1.3 Mimari Vizyon
-Çevrimdışı öncelikli (Offline-First), istemci tarafında şifreleme yapan (Zero-Knowledge), CRDT tabanlı senkronizasyon kullanan, ölçeklenebilir not alma altyapısı.
+Çevrimdışı öncelikli (Offline-First), istemci tarafında şifreleme yapan (Zero-Knowledge), CRDT tabanlı senkronizasyon kullanan (Yjs), Web Worker tabanlı kripto motoruna sahip ölçeklenebilir not alma altyapısı.
 
 ---
 
 ## 2. Hedef Kullanıcılar
 
-| Persona | Profil | İhtiyaç | MVP'de hedef mi? |
+| Persona | Profil | İhtiyaç | Gerçekleşme Durumu |
 |---|---|---|---|
-| **Günlük Kullanıcı** ("Sadelik Arayan") | Öğrenci, ev hanımı, standart ofis çalışanı | Fikir, alışveriş listesi, yapılacakları sıfır gecikmeyle kaydetmek; klasör karmaşasından kaçınmak | ✅ Evet |
-| **Power User / Geliştirici** ("Güvenlik ve Fonksiyon Arayan") | Yazılım mühendisi, veri bilimci, araştırmacı | Kod blokları, API anahtarı/token saklamak için yüksek güvenlik, veri kaybı olmayacağı garantisi | ✅ Evet (Kasa + Markdown) |
-| **Kurumsal Ekip / Proje Yöneticisi** ("İşbirliği Arayan") | Startup kurucusu, ürün yöneticisi, tasarım ekibi | Ekip içi paylaşım, eşzamanlı düzenleme, rol yönetimi | ❌ Hayır (v2.0+ / kapsam dışı) |
+| **Günlük Kullanıcı** ("Sadelik Arayan") | Öğrenci, standart ofis çalışanı | Fikir, alışveriş listesi ve yapılacakları sıfır gecikmeyle kaydetmek; Google Keep sadeliği | ✅ v1.0/v1.1 Tamamlandı |
+| **Power User / Geliştirici** ("Güvenlik ve Fonksiyon Arayan") | Yazılım mühendisi, veri uzmanı, araştırmacı | Kod blokları, API anahtarı/token saklamak için yüksek güvenlik (E2EE Kasa), Markdown dışa aktarma, klavye kısayolları | ✅ v1.0/v1.1 Tamamlandı |
+| **Kurumsal Ekip / Proje Yöneticisi** ("İşbirliği Arayan") | Startup kurucusu, takım yöneticisi | Eşzamanlı canlı imleçler, takım içi rol yönetimi | ❌ v2.0+ (Kapsam dışı) |
 
 ---
 
 ## 3. MVP Kapsamı (MoSCoW)
 
-### 3.1 Must-Have (v1.0)
+### 3.1 Must-Have (v1.0 - ✅ TAMAMLANDI)
 
 | Özellik | Açıklama |
 |---|---|
-| **Minimalist UI** | Google Keep benzeri grid / post-it görünümü |
-| **Temel Notlar** | Sunucuda senkronize edilen, hızlı aranabilir metin notları |
-| **Şifreli Kasa (E2EE)** | Kullanıcının belirlediği "Master Password" ile açılan; veriler tarayıcıda AES-256-GCM ile şifrelenip buluta anlamsız blob olarak giden güvenli alan |
-| **Temel Markdown** | `/` (slash) menüsü **olmadan**; kalın, italik, liste, kod bloğu |
+| **Minimalist UI** | Google Keep benzeri masonry grid / kart görünümü |
+| **Temel Notlar** | Yerel veritabanında saklanan, anında aranabilir ve bulutla eşitlenen metin notları |
+| **Şifreli Kasa (E2EE)** | Kullanıcının belirlediği Master Password ile açılan; verilerin tarayıcıda AES-256-GCM ile şifrelenip sunucuya anlamsız blob olarak gittiği sıfır bilgi alanı |
+| **Temel Markdown** | `/` menüsü olmadan; kalın, italik, liste ve syntax-highlighted kod blokları |
 | **Çevrimdışı Temel Destek** | İnternet yokken not alma; online olunca Yjs (CRDT) ile çakışmasız senkronizasyon |
-| **Platform** | Yalnızca Responsive Web App + PWA |
+| **Platform** | Responsive Web App ve PWA desteği |
 
-### 3.2 Should-Have (v1.1 – hızlı güncellemeler)
-- Notları salt okunur (read-only) link olarak paylaşma
-- Not renklendirme ve etiketleme (Tagging)
-- Karanlık Mod (Dark Mode)
+### 3.2 Should-Have (v1.1 – ✅ TAMAMLANDI)
+- **PWA Kurulum Deneyimi:** `beforeinstallprompt` hook'u, kenar çubuğunda "Uygulamayı Yükle" butonu, Google Fonts runtime caching ve eksiksiz çevrimdışı cache.
+- **Notları Salt Okunur Link ile Paylaşma:** `#share/...` hash mekanizması ve readonly Tiptap render.
+- **Markdown Dışa Aktarma:** `.md` formatında indirme ve tek tıkla panoya kopyalama.
+- **Not Renklendirme ve Etiketleme (Tagging):** 6'lı pastel renk seçimi, etiket yönetimi ve sidebar üzerinden etiket filtreleme.
+- **Karanlık Mod (Dark Mode):** Kolay tema geçiş butonu ve göz yormayan karanlık palet.
+- **Klavye Kısayolları:** `N`, `/`, `?`, `Ctrl+K`, `Esc` tuşları ve girdi alanlarında kısayolların engellenmesi koruması.
+- **Güvenli NoteModal:** İzole Kapat ($X$) butonu, alt barda iki aşamalı onaylı Silme butonu, ilk açılışta doğrudan başlığa odaklanma ve minimum 44x44 px dokunma alanları.
+- **Çevrimdışı Bildirim Çubuğu:** Ağ koptuğunda üstte sarı uyarı, bağlantı geldiğinde yeşil bildirim.
 
 ### 3.3 Could-Have (v2.0)
 - Mobil native uygulamalar (iOS / Android)
-- Yüz tanıma / parmak izi ile Kasa açılışı
+- Yüz tanıma / parmak izi ile Kasa açılışı (WebAuthn)
 - Markdown tabloları ve gelişmiş bağlantılı not (Backlinking) yapısı
 
 ### 3.4 Won't-Have (şu an kapsam dışı)
 - Aynı not üzerinde eşzamanlı ortak çalışma (Multiplayer / canlı imleçler)
-- Not içi yorum ve `@` ile etiketleme
+- Not içi blok yorumları ve `@` ile etiketleme
 - Kurumsal paketler, ekip çalışma alanları, yetki yönetimi (Admin Panel)
 
 ---
 
-## 4. Fonksiyonel Gereksinimler ve MVP Durumu
+## 4. Fonksiyonel Gereksinimler ve Gerçekleşme Durumu
+
+| ID | Gereksinim | Durum |
+|---|---|---|
+| **FR-1** | Açılış ekranı minimalist kart/post-it ızgarası (grid) olmalı | ✅ Tamamlandı |
+| **FR-2** | Sözdizimi tabanlı Markdown editörü (kalın, italik, liste, kod bloğu) | ✅ Tamamlandı |
+| **FR-3** | Standart notlar: yerelde anında arama, sunucuda şifreli senkronizasyon | ✅ Tamamlandı |
+| **FR-4** | Master Password ile açılan Şifreli Kasa | ✅ Tamamlandı |
+| **FR-5** | Kasa notları cihazda uçtan uca şifrelenmeli (Zero-Knowledge AES-256-GCM) | ✅ Tamamlandı (E2E doğruluğu kanıtlandı) |
+| **FR-6** | İnternetsiz yeni not oluşturma / düzenleme (Offline-first IndexedDB) | ✅ Tamamlandı |
+| **FR-7** | Çevrimdışı/çevrimiçi çakışmaları CRDT (Yjs) ile otomatik birleştirme | ✅ Tamamlandı |
+| **FR-8** | Standart notları salt okunur link (#share) ve Markdown (.md) olarak dışa aktarma | ✅ Tamamlandı (v1.1) |
+| **FR-9** | PWA masaüstü/mobil kurulabilirlik ve Service Worker çevrimdışı cache | ✅ Tamamlandı (v1.1) |
+| **FR-10** | Klavye kısayolları (`N`, `/`, `?`, `Ctrl+K`) ve güvenli modal tasarımı | ✅ Tamamlandı (v1.1) |
 
 `requirements.md` tam ürün vizyonunu tanımlar. Aşağıdaki tablo her gereksinimin MVP'deki karşılığını gösterir.
 
@@ -350,67 +364,51 @@ flowchart LR
 
 ---
 
-## 11. UI/UX İlkeleri
+## 11. UI/UX İlkeleri ve Güvenli Etkileşim
 
 - **Kademeli gösterim (Progressive Disclosure):** Açılışta yalın bir kart/post-it ızgarası; zengin özellikler yalnızca gerektiğinde ortaya çıkar.
 - **Minimalist grid:** Google Keep tarzı masonry yerleşim, kartlar ekrana göre dinamik dizilir.
-- **Yeni not:** Tek tıkla boş kart, anında odak.
-- **Sözdizimi tabanlı biçimlendirme:** Slash menüsü yok. `* `, ` ``` `, Cmd+B gibi kısayol ve Markdown yazımı yeterli.
-- **Onboarding hedefi:** Kayıttan ilk nota en fazla 3 tıklama / 15 sn (NFR-7).
-- **Çevrimdışı deneyim:** Bağlantı kopsa da kullanıcı uyarı ile kesintiye uğramadan yazmaya devam eder.
+- **Yeni not:** Tek tıkla veya klavyeden `N` tuşuna basarak anında boş kart ve başlığa odaklanma.
+- **Sözdizimi tabanlı biçimlendirme:** Slash menüsü yok. `* `, ` ``` `, Cmd+B / Ctrl+B gibi kısayol ve Markdown yazımı yeterli.
+- **Klavye Kısayolları ve Koruma:** `N`, `/`, `?`, `Ctrl+K`, `Esc` kısayolları mevcuttur; kullanıcı herhangi bir yazı alanındayken veya Tiptap editöründe yazarken kısayollar kesinlikle tetiklenmez.
+- **Güvenli NoteModal Etkileşimi:**
+  - Kapat ($X$) butonu sağ üstte tek başına yer alır; yanında veya çaprazında kaza riski oluşturacak eylem butonu bulunmaz.
+  - Sil ($Trash2$) butonu pencerenin sol alt footer alanına taşınmıştır. Yanlışlıkla basılsa dahi doğrudan silinmez; iki aşamalı onay diyaloğu ("Notu Silmek İstiyor Musunuz?") ile korunur.
+  - Paylaş butonu sol üstte not rozetinin yanında yer alır ve tek tip buton varyantı kullanır.
+  - Pencere açıldığında odak kapatma/silme butonlarına değil, doğrudan not başlığı girdisine verilir (`autoFocus`).
+  - Tüm dokunma hedefleri en az 44x44 px olup erişilebilirlik (WCAG / a11y) standartlarına uygundur.
+- **Çevrimdışı deneyim:** Ağ koptuğunda kullanıcı sarı bilgilendirme çubuğu eşliğinde kesintisiz yazmaya devam eder; bağlantı sağlandığında yeşil bildirimle eşitlenir.
 - **Kasa arayüzü:**
   - Ana şifre girilmeden Kasa sekmesi açılmaz.
-  - Yanlış şifrede net "Şifre Yanlış" mesajı.
-  - Şifre belirleme ekranında "unutulursa kurtarılamaz" uyarısı açıkça gösterilir.
-  - "Şifremi Unuttum" bağlantısı **bulunmaz**.
-- **Tutarlılık:** Web ve mobil (responsive/PWA) görünümde aynı Markdown render sonucu.
-- **Erişilebilirlik:** Radix UI bileşenleri ile a11y desteği.
+  - Yanlış şifrede sunucuya sorulmadan yerel MAC hatasıyla anında "Şifre Yanlış" mesajı verilir.
+  - Şifre belirleme ekranında "unutulursa kurtarılamaz" uyarısı açıkça gösterilir; "Şifremi Unuttum" bağlantısı bulunmaz.
+- **Karanlık Mod:** Göz yormayan koyu tema, tek tıkla açık/koyu mod geçişi.
+- **Tutarlılık ve PWA:** Masaüstü ve 375 px mobil ekranlarda %100 responsive düzen; tarayıcı menüsünden veya Sidebar'daki "Uygulamayı Yükle" butonuyla ana ekrana tek tıkla kurulabilirlik.
 
 ---
 
 ## 12. Yol Haritası
 
-| Sürüm | İçerik |
-|---|---|
-| **v1.0 (MVP)** | Minimalist grid UI, senkronize standart notlar, E2EE Şifreli Kasa, temel Markdown, offline-first + Yjs, Responsive Web + PWA |
-| **v1.1** | Salt okunur link paylaşımı, renk ve etiket (Tagging), Karanlık Mod |
-| **v2.0** | iOS / Android native uygulamalar, biyometrik Kasa açılışı, Markdown tabloları ve backlinking |
-| **Sonrası (şu an rafta)** | Multiplayer / canlı imleç, yorum ve `@` etiketleme, takım çalışma alanları, admin panel, abonelik ve ödeme |
+| Sürüm | İçerik | Durum |
+|---|---|---|
+| **v1.0 (MVP)** | Minimalist grid UI, senkronize standart notlar, E2EE Şifreli Kasa, temel Markdown, offline-first + Yjs, Responsive Web | ✅ Tamamlandı & Doğrulandı |
+| **v1.1** | PWA Kurulum Deneyimi (`beforeinstallprompt` + Google Fonts runtime cache), Salt okunur link (#share), Markdown export, renk & etiketleme, Karanlık Mod, klavye kısayolları, güvenli NoteModal mimarisi | ✅ Tamamlandı & Doğrulandı |
+| **v2.0** | Mobil native uygulamalar (iOS / Android), biyometrik Kasa açılışı (WebAuthn), Markdown tabloları ve bağlantılı notlar (Backlinking) | 📋 Planlandı |
+| **Sonrası (Rafta)** | Multiplayer / canlı imleç, yorum ve `@` etiketleme, takım çalışma alanları, admin panel, abonelik ve ödeme | ⏸️ Beklemede |
 
 ---
 
-## 13. Dokümanlar Arası Tutarsızlıklar ve Açık Sorular
+## 13. Çözümlenen Teknik Kararlar ve v2.0 Vizyonu
 
-> Bu bölüm kaynak dokümanların karşılaştırılmasından çıkan gözlemlerdir. Geliştirmeye başlamadan önce karara bağlanmaları önerilir.
+v1.0 sürecindeki açık mimari sorular v1.1 geliştirmeleri sırasında netleştirilmiş ve üretime alınmıştır:
 
-### 13.1 Dokümanlar arası çelişkiler
-
-| # | Konu | Çelişki | Öneri |
-|---|---|---|---|
-| 1 | **Slash menüsü** | `requirements.md` (FR-2, persona senaryosu) `/` ile zengin editörü tetikler; `mvp_scope.md` ve `acceptance_criteria.md` MVP'de slash menüsünü **yasaklar** | MVP için `mvp_scope` geçerli sayılsın; `requirements.md` v2.0 vizyonu olarak işaretlensin |
-| 2 | **Standart notlarda arama ve sunucu görünürlüğü** | `requirements.md` (FR-3, NFR-4) ve `mvp_scope.md` standart notlar için *sunucu tarafında şifreli, aranabilir* der; `tech_stack.md` ise sunucuyu içeriği parse edemeyen "aptal röle" olarak tanımlar | Standart notlar için sunucunun içerik görüp görmeyeceği net karar verilmeli (bkz. 13.2 #1) |
-| 3 | **Veritabanı** | `system_design.md`: NoSQL (MongoDB) veya PostgreSQL JSONB; `tech_stack.md`: Supabase / PostgreSQL | `tech_stack.md` kararı esas alınabilir; `system_design.md` güncellenmeli |
-| 4 | **Redis** | `system_design.md`'de Cache olarak var; `tech_stack.md`'de hiç geçmiyor | MVP'de gerekli mi karar verilmeli (Supabase Realtime / Hocuspocus ile gereksiz olabilir) |
-| 5 | **Sync servisi** | `tech_stack.md` "Hocuspocus **veya** Supabase Realtime" der, seçim yapılmamış | Spike ile karşılaştırılıp tek seçenek seçilmeli |
-| 6 | **Yerel depolama** | `system_design.md` "IndexedDB/SQLite" der; MVP yalnızca web olduğu için IndexedDB yeterli | SQLite v2.0 (native) için ertelensin |
-| 7 | **Platform tutarlılığı** | NFR-8 üç platformda %100 tutarlılık ister; MVP yalnızca PWA | NFR-8 MVP için "yalnızca PWA" olarak daraltılmalı |
-| 8 | **Gecikme hedefi** | NFR-2: 50 ms (multiplayer); kabul kriteri: cihazlar arası 3 sn | MVP'de 3 sn geçerli; 50 ms v2.0+ hedefi olarak işaretlensin |
-| 9 | **Sync Service "doğrular"** | `system_design.md` Sync Service'in gelen güncellemeleri "doğrulayacağını" söyler, ancak Kasa verisini okuyamaz | Doğrulama yalnızca yetki/boyut/format düzeyinde olmalı, içerik düzeyinde olamaz |
-
-### 13.2 Dokümanda cevabı bulunmayan teknik sorular
-
-1. **Standart notlarda "hızlı arama" nasıl yapılacak?** Yjs binary state sunucuda okunamaz. Seçenekler: (a) yalnızca istemci tarafı arama, (b) sunucuda ayrı düz metin/FTS sütunu.
-2. **Kasa için Yjs entegrasyonu:** Hocuspocus ve Tiptap'in standart collaboration sağlayıcısı Yjs güncellemelerini şifrelemeden gönderir. Kasa notları için güncellemeleri göndermeden önce şifreleyen **özel bir sağlayıcı/katman** gerekir.
-3. **Salt ve çok cihazlı Kasa kurulumu:** PBKDF2 için salt değerinin saklanacağı yer ve 2. cihazın aynı anahtarı nasıl türeteceği belirtilmemiş (salt gizli değildir, genelde sunucuda saklanır).
-4. **Parola doğrulama mekanizması:** "Yerel MAC hatası ile yanlış şifre tespiti" için bilinen bir şifreli doğrulama bloğu (verifier) saklanması gerekebilir.
-5. **PBKDF2 parametreleri:** İterasyon sayısı ve hash algoritması belirtilmemiş. Bu seçim güvenlik ve 1.5 sn performans hedefi arasında bir denge gerektirir.
-6. **Kasa oturum süresi:** Anahtar "oturum kapanınca" siliniyor; otomatik kilitlenme süresi ve sekme yenilendiğinde yeniden şifre sorulup sorulmayacağı belirsiz.
-7. **Kasa içi yerel arama:** Çözülmüş içerik için yerel indeks nerede tutulacak? Düz metin indeksi diske yazılmamalı; yalnızca bellekte mi yoksa şifreli mi saklanacağı belirlenmeli.
-8. **Garbage Collection politikası:** Hangi eşikte (kota %?, geçmiş boyutu?) ve hangi veri için çalışacağı tanımlı değil. Çok cihazlı ortamda GC'nin diğer cihazların senkronizasyonunu bozmaması gerekir.
-9. **Yetkilendirme (veritabanı seviyesi):** Kullanıcıların yalnızca kendi satırlarını görebilmesi için Supabase Row Level Security (RLS) politikaları tanımlanmalı (dokümanlarda geçmiyor).
-10. **Yedekleme ve veri silme:** GDPR hazırlığı (NFR-6) kapsamında hesap silme ve veri dışa aktarma akışı MVP'de nasıl ele alınacak?
-11. **Onboarding (NFR-7):** 3 tıklama / 15 sn hedefi için kabul kriteri yazılmamış.
-12. **Mobil görünüm tanımı:** Kabul kriterlerindeki "mobil görünüm" PWA/responsive anlamına geliyor; hedef ekran boyutları ve tarayıcı desteği matrisi belirtilmemiş.
+1. **Standart Notlarda Hızlı Arama:** İstemci tarafında yerel IndexedDB ve Zustand store üzerinden anlık sıfır gecikmeli bellek araması uygulanmıştır. Ağ sızıntısı önlenmiştir.
+2. **Kasa için E2EE Kriptografi:** Web Worker üzerinde `crypto.subtle` kullanılarak PBKDF2 (100.000 iterasyon, SHA-256) ve AES-256-GCM (12-byte rastgele IV) uygulanmıştır. Kasa notlarının içeriği asla ağ paketlerinde veya depolamada açık metin olarak yer almaz.
+3. **Parola Doğrulama:** Yanlış parola girişleri AES-GCM tag doğrulama hatası (MAC mismatch) ile yerel olarak yakalanır; sunucuya parola veya doğrulayıcı hash gönderilmez.
+4. **Salt ve Anahtar Yaşam Döngüsü:** 16-byte rastgele salt şifreli not bloğunun başında saklanır. Türetilen CryptoKey yalnızca bellek (RAM) içinde tutulur, `localStorage`'a yazılmaz ve "Kasayı Kilitle" eylemiyle anında bellekten temizlenir.
+5. **Salt Okunur Paylaşım:** Sunucusuz, URL `#share/{base64Payload}` hash mekanizması geliştirilmiştir. URL hash sunucu loglarına gitmez ve istemcide güvenle render edilir.
+6. **PWA & Çevrimdışı Önbellek:** `vite-plugin-pwa` ile core asset'ler precache edilir; Google Fonts font dosyaları Workbox CacheFirst stratejisiyle 1 yıl süreli önbelleğe alınır.
+7. **NoteModal Güvenlik Mimarisi:** Yanlışlıkla silmeyi önlemek için Silme butonu alt bara alınmış, çift aşamalı onay diyaloğu eklenmiş ve Kapat butonu bağımsız sağ üst köşede konumlandırılmıştır. Odak varsayılan olarak not başlığı girdisine verilir.
 
 ---
 
