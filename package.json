@@ -1,0 +1,23 @@
+{
+  "name": "pronotes",
+  "version": "1.0.0",
+  "packageManager": "npm@11.19.1",
+  "private": true,
+  "description": "Offline-first, End-to-End Encrypted (E2EE) Markdown & Notes Application",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2"
+  }
+}

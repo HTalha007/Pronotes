@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_blank" name="shell-type"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF8F5',
+            'paper-card': '#FFFFFF',
+            'paper-border': '#E8E4DE',
+            'paper-charcoal': '#2E2E38',
+            'paper-muted': '#6B6B76',
+            'paper-subtle': '#8E8E98',
+            'paper-periwinkle': '#DDE3FA',
+            'paper-periwinkle-hover': '#CBD5F5',
+            'paper-navy': '#2F3A6B',
+            'paper-link': '#6F82D6',
+            'paper-light-bg': '#F5F3EF',
+          },
+          borderRadius: {
+            'card': '8px',
+            'field': '6px',
+          },
+          fontSize: {
+            'body': ['15px', { lineHeight: '22px' }],
+            'body-sm': ['13px', { lineHeight: '18px' }],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#FAF8F5] text-[#2E2E38] font-['Inter'] flex items-center justify-center min-h-screen p-4 sm:p-6">
+<main class="w-full max-w-[420px] mx-auto py-8">
+<div class="flex flex-col w-full items-center">
+<!-- Minimal Header -->
+<div class="flex flex-col items-center text-center mb-6">
+<div class="w-10 h-10 rounded-[6px] bg-[#EAEBF2] flex items-center justify-center text-[#2F3A6B] mb-3">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[20px] font-semibold text-[#2E2E38] tracking-tight">NoteVault</span>
+<span class="text-[11px] px-1.5 py-0.5 rounded-[4px] bg-[#EAE7E1] text-[#6B6B76] font-medium">v2.4</span>
+</div>
+<p class="text-[13px] text-[#6B6B76] mt-1 max-w-[280px]">
+          Sade, hızlı ve uçtan uca gizli not defteriniz
+        </p>
+</div>
+<!-- Main Clean Paper Card -->
+<div class="w-full bg-white rounded-[8px] border border-[#E8E4DE] p-6 sm:p-7 flex flex-col">
+<!-- Title & Subtitle -->
+<div class="mb-5 text-center">
+<h1 class="text-[19px] font-semibold text-[#2E2E38]" id="auth-title">Hesap Oluştur</h1>
+<p class="text-[13px] text-[#6B6B76] mt-1" id="auth-subtitle">3 tıkta ilk notunuza başlayın</p>
+</div>
+<!-- Passkey Entry Button -->
+<button class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-[6px] border border-[#E8E4DE] bg-[#FAF8F5] hover:bg-[#F2EFE9] text-[#2E2E38] text-[13px] font-medium transition-colors mb-5" id="passkey-btn" type="button">
+<span class="material-symbols-outlined text-[#6F82D6] text-[18px]">fingerprint</span>
+<span>Geçiş Anahtarı (Passkey) ile Hızlı Başla</span>
+</button>
+<!-- Divider -->
+<div class="relative flex items-center justify-center mb-5">
+<div class="w-full border-t border-[#E8E4DE]"></div>
+<span class="absolute bg-white px-3 text-[12px] text-[#8E8E98] tracking-normal">veya e-posta</span>
+</div>
+<!-- Auth Form -->
+<form class="flex flex-col gap-4" id="auth-form" onsubmit="event.preventDefault(); simulateAuth();">
+<!-- Email Field -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="text-[13px] font-medium text-[#2E2E38]" for="email">E-posta Adresi</label>
+<span class="text-[11px] text-[#8E8E98]">Gerekli</span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full bg-white text-[#2E2E38] text-[14px] px-3 py-2 rounded-[6px] border border-[#E8E4DE] placeholder:text-[#A4A4AE] focus:outline-none focus:border-[#6F82D6] focus:ring-1 focus:ring-[#6F82D6] transition-colors" id="email" placeholder="adiniz@ornek.com" required="" type="email"/>
+<span class="material-symbols-outlined absolute right-3 text-[#A4A4AE] text-[18px] pointer-events-none">alternate_email</span>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="text-[13px] font-medium text-[#2E2E38]" for="password">Şifre</label>
+<button class="hidden text-[12px] text-[#6F82D6] hover:underline" id="forgot-password-link" type="button">
+                Şifremi unuttum?
+              </button>
+</div>
+<div class="relative flex items-center">
+<input class="w-full bg-white text-[#2E2E38] text-[14px] pl-3 pr-9 py-2 rounded-[6px] border border-[#E8E4DE] placeholder:text-[#A4A4AE] focus:outline-none focus:border-[#6F82D6] focus:ring-1 focus:ring-[#6F82D6] transition-colors" id="password" placeholder="••••••••••••" required="" type="password"/>
+<button aria-label="Şifreyi Göster" class="absolute right-2 p-1 text-[#8E8E98] hover:text-[#2E2E38] transition-colors flex items-center justify-center rounded" id="toggle-pwd" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[18px]" id="pwd-icon">visibility_off</span>
+</button>
+</div>
+<!-- Security hint -->
+<div class="flex items-center gap-1.5 mt-0.5 text-[#6B6B76]">
+<span class="material-symbols-outlined text-[14px] text-[#6F82D6]">verified_user</span>
+<span class="text-[12px]">Anahtarınız cihazınızda türetilir (Argon2id)</span>
+</div>
+</div>
+<!-- Primary Submit Button -->
+<button class="w-full mt-2 py-2.5 px-4 rounded-[6px] bg-[#DDE3FA] hover:bg-[#CBD5F5] text-[#2F3A6B] text-[14px] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#6F82D6] focus:ring-offset-2 flex items-center justify-center gap-1.5" id="submit-btn" type="submit">
+<span id="submit-text">Kayıt Ol</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</form>
+<!-- Switcher within Card -->
+<div class="mt-6 pt-4 border-t border-[#E8E4DE] flex items-center justify-center gap-1.5 text-center text-[13px]">
+<span class="text-[#6B6B76]" id="mode-question">Zaten hesabınız var mı?</span>
+<button class="font-medium text-[#6F82D6] hover:underline transition-colors" id="mode-toggle-btn" onclick="toggleMode()" type="button">
+            Giriş yap
+          </button>
+</div>
+</div>
+<!-- Single Quiet Privacy / Security Note -->
+<div class="mt-4 px-3 text-center">
+<p class="text-[12px] text-[#6B6B76] leading-relaxed">
+<strong class="font-medium text-[#2E2E38]">Sıfır bilgi mimarisi (Zero-knowledge)</strong> — Notlarınız sadece sizin yerel anahtarınızla çözülür; sunucularımız dahi içeriği asla göremez.
+        </p>
+</div>
+</div>
+</main>
+<script>
+    let isSignUpMode = true;
+
+    function toggleMode() {
+      isSignUpMode = !isSignUpMode;
+      const title = document.getElementById('auth-title');
+      const subtitle = document.getElementById('auth-subtitle');
+      const submitText = document.getElementById('submit-text');
+      const modeQuestion = document.getElementById('mode-question');
+      const modeToggleBtn = document.getElementById('mode-toggle-btn');
+      const forgotPwd = document.getElementById('forgot-password-link');
+
+      if (isSignUpMode) {
+        title.innerText = 'Hesap Oluştur';
+        subtitle.innerText = '3 tıkta ilk notunuza başlayın';
+        submitText.innerText = 'Kayıt Ol';
+        modeQuestion.innerText = 'Zaten hesabınız var mı?';
+        modeToggleBtn.innerText = 'Giriş yap';
+        forgotPwd.classList.add('hidden');
+      } else {
+        title.innerText = 'Tekrar Hoş Geldiniz';
+        subtitle.innerText = 'Kasanızın kilidini açın ve notlarınıza erişin';
+        submitText.innerText = 'Giriş Yap';
+        modeQuestion.innerText = 'Henüz hesabınız yok mu?';
+        modeToggleBtn.innerText = 'Ücretsiz Kayıt Ol';
+        forgotPwd.classList.remove('hidden');
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('password');
+      const pwdIcon = document.getElementById('pwd-icon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        pwdIcon.innerText = 'visibility';
+      } else {
+        pwdInput.type = 'password';
+        pwdIcon.innerText = 'visibility_off';
+      }
+    }
+
+    function simulateAuth() {
+      const btn = document.getElementById('submit-btn');
+      const originalContent = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[16px]">sync</span><span>Kasa Açılıyor...</span>`;
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span><span>Hazır!</span>`;
+        setTimeout(() => {
+          btn.innerHTML = originalContent;
+          btn.disabled = false;
+        }, 1200);
+      }, 1000);
+    }
+  </script>
+</body></html>

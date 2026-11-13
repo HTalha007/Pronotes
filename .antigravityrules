@@ -1,0 +1,71 @@
+# Project: ProNotes (Offline-First, E2EE, CRDT-based Note App)
+# Tech Stack: TypeScript, React 18+ (Vite), Zustand, Tailwind CSS, Supabase, Yjs, Tiptap, WebCrypto API
+
+You are a Senior System Architect and Senior Frontend Developer. You MUST strictly follow these rules when writing code.
+
+## 1. Architecture & Directory Structure (Turborepo + Clean Architecture)
+*   **Monorepo:** The project consists of 3 packages:
+    *   `apps/web`: React (Vite) PWA. Presentation layer + composition root. Contains only UI, routing and wiring.
+    *   `packages/ui`: Tailwind CSS and Radix UI based reusable component library without business logic.
+    *   `packages/core`: Contains ALL business logic, organized in Clean Architecture layers (see section 1.1).
+*   **Rule:** No React component in `apps/web` is allowed to directly call Supabase or WebCrypto API. All data sync, CRDT, and encryption operations MUST go through `@pronotes/core`.
+*   **Naming:** Use `kebab-case` for all files and directories (e.g., `note-list.tsx`, `use-auth.ts`).
+
+### 1.1 Clean Architecture (MANDATORY)
+This project follows Clean Architecture. Source-code dependencies point INWARD only:
+
+```
+apps/web (UI, Zustand, composition root)  ──►  packages/core/src/infrastructure (adapters)  ──►  packages/core/src/domain
+                                          └─────────────────────────────────────────────────►  (entities + use cases + ports)
+```
+
+| Layer | Location | Contains | May import |
+|---|---|---|---|
+| **Domain** (innermost) | `packages/core/src/domain/` | Entities, value objects, domain errors, **ports** (repository/service interfaces), **use cases** | Only other files inside `domain/`. Nothing else. |
+| **Infrastructure** (adapters) | `packages/core/src/infrastructure/` (target) | Implementations of ports: IndexedDB/`idb`, `y-indexeddb`, Yjs, WebCrypto + Web Worker, Supabase Auth/Realtime, Hocuspocus, `crypto.randomUUID`, `navigator.onLine` | `domain/` + external libraries |
+| **Presentation** | `apps/web`, `packages/ui` | React components, Zustand stores, hooks, Tiptap editor, routing | `@pronotes/core` public API (`domain` use cases/entities, composed infrastructure). `packages/ui` imports nothing from core. |
+
+*   **Dependency Rule:** an inner layer MUST NEVER import from an outer layer. `domain/` must not know React, Zustand, Supabase, Yjs, IndexedDB, WebCrypto, Tiptap or the DOM.
+*   **Domain purity:** inside `packages/core/src/domain/` it is FORBIDDEN to import any npm package, to reference `window`, `document`, `navigator`, `indexedDB`, `localStorage`, `fetch`, `WebSocket`, `Worker`, `crypto` (global), `btoa/atob`, and to use `any`. Use the pure helpers in `domain/shared/` instead. Enforced by `npm run check:architecture` (MUST pass before finishing any task that touches `packages/core`).
+*   **Entities & value objects:** immutable (`readonly`) plain TypeScript types + pure factory/transition functions (`createStandardNote`, `markNoteDeleted`, ...). Never mutate; return a new object. Validate invariants in value-object factories (`createNoteTitle`, `createMasterPassword`, ...) that return `Result`, never `throw`. IDs are branded types (`NoteId`, `UserId`).
+*   **Ports (Dependency Inversion):** every external capability (storage, crypto, sync, auth, time, ids, connectivity) is an interface in `domain/repositories/` or `domain/services/`. The domain only depends on the interface; infrastructure provides the implementation.
+*   **Use cases (one class = one user intention):** live in `domain/use-cases/<area>/<verb-noun>.ts`, implement `UseCase<Input, Output>`, receive ports via constructor injection, expose a single `execute(input)` and return `Promise<Result<Output, DomainError>>`. They contain the application rules (ownership checks, vault must be unlocked, offline is not an error). No use case calls another layer's concrete class and none touches UI state.
+*   **Error handling in the domain:** expected failures are typed `DomainError` subclasses (with a stable `code`) returned through `Result` (`ok` / `err`). Throwing is only for unexpected infrastructure faults. The UI maps `error.code` to localized text; domain messages are never shown directly.
+*   **Presentation layer rules:** React components/Zustand stores call use cases ONLY (never repositories or ports directly, never `idb`/`yjs`/`supabase-js`/`crypto.subtle`). Use cases are instantiated once in a single composition root (`apps/web/src/composition-root.ts`) where concrete adapters are injected. Business rules (validation, authorization, vault policy) MUST NOT be implemented in components or stores.
+*   **Adding a feature (checklist):** (1) model/extend entities & value objects → (2) declare required ports → (3) write the use case + its unit test with in-memory fakes (`packages/core/tests/`) → (4) implement the adapter in `infrastructure/` → (5) wire it in the composition root → (6) build the UI on top. Never start from the UI or the adapter.
+*   **Testing:** use cases and entities are tested with Vitest against in-memory fakes (`packages/core/tests/support/`); no browser, no network. Run `npm test` and `npm run type-check`.
+*   **Legacy code:** `packages/core/src/{crypto,storage,crdt,sync,types}` pre-date the layering. They are to be migrated into `infrastructure/` as adapters of the domain ports and must not be imported by `domain/`. Do not add new code there. Full details: `Documantations/domain-layer.md`.
+
+## 2. Type Safety (Strict TypeScript)
+*   `any` is STRICTLY FORBIDDEN. Use `unknown` with type guards if necessary.
+*   Define explicit interfaces/types for all data structures (especially Yjs doc types and Supabase responses). Use TypeScript Generics for Yjs docs.
+
+## 3. State Management
+*   Use `Zustand` exclusively for global state management. Do NOT use Redux or complex Context API structures.
+*   Strictly separate UI states (e.g., `isVaultUnlocked`, `activeNoteId`) from data states (synced notes coming from Yjs).
+*   Use fine-grained selectors when binding Zustand stores to React components to prevent unnecessary re-renders.
+
+## 4. Data Synchronization & Yjs (CRDT)
+*   **Offline-First:** The primary source of truth for reading/writing data is the browser's local `IndexedDB` (`y-indexeddb`).
+*   The UI NEVER sends requests directly to Supabase to save notes. The UI updates the Yjs document; the Yjs provider syncs changes in the background when online.
+*   DO NOT write custom timestamp-based conflict resolution logic. Rely entirely on Yjs vector clocks and built-in CRDT algorithms.
+
+## 5. Security & End-to-End Encryption (E2EE - Vault)
+*   **Zero-Knowledge:** The user's "Master Password" is NEVER sent to Supabase and NEVER stored as plaintext in localStorage.
+*   **Encryption Pipeline:** Derive key via `PBKDF2`, encrypt Yjs vectors with `AES-256-GCM`, and send ONLY the encrypted blob to the server.
+*   **Web Workers:** Cryptographic operations (key derivation, encryption/decryption) MUST run inside a `WebWorker` to prevent blocking the Main UI Thread (`NFR-1`).
+
+## 6. UI & Styling (React & Tailwind)
+*   Use Functional Components and React Hooks only.
+*   Design must be minimalist, clean, and spacious (Google Keep-inspired).
+*   Use SADECE Tailwind CSS utility classes for styling. NEVER create custom `.css` or `.scss` files.
+*   Use Radix UI for complex accessible components (modals, dropdowns).
+
+## 7. Rich Text Editor (Tiptap)
+*   Use `Tiptap` (ProseMirror based) with native Yjs collaboration extension.
+*   Support ONLY Basic Markdown (Bold, Italic, Bullet lists, Code blocks) for MVP.
+*   Do NOT implement image uploads, tables, or complex slash commands for the MVP.
+
+## 8. Error Handling & Edge Cases
+*   In offline mode, do NOT show annoying error toasts/alerts to the user. The app is designed to work offline seamlessly; ensure data is successfully persisted to IndexedDB.
+*   Handle incorrect "Master Password" entries locally via decryption failures (AES-GCM Authentication Tag verification) rather than relying on server-side validation.

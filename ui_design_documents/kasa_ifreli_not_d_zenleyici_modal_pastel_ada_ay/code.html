@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-error": "#ffffff",
+          "on-primary-fixed-variant": "#3323cc",
+          "surface-container": "#e6eeff",
+          "on-primary-fixed": "#0f0069",
+          "surface-container-highest": "#d9e3f6",
+          "surface-bright": "#f8f9ff",
+          "surface-variant": "#d9e3f6",
+          "on-tertiary-container": "#7df1bd",
+          "on-secondary-fixed-variant": "#224d4e",
+          "tertiary-fixed": "#85f8c4",
+          "on-error-container": "#93000a",
+          "primary-container": "#4f46e5",
+          "inverse-primary": "#c3c0ff",
+          "on-secondary": "#ffffff",
+          "tertiary-fixed-dim": "#68dba9",
+          "on-tertiary-fixed-variant": "#005137",
+          "tertiary": "#005338",
+          "surface-container-lowest": "#ffffff",
+          "secondary": "#3b6566",
+          "primary-fixed": "#e2dfff",
+          "surface-container-high": "#dee9fc",
+          "on-tertiary": "#ffffff",
+          "on-background": "#121c2a",
+          "tertiary-container": "#006e4c",
+          "on-secondary-container": "#426b6c",
+          "outline-variant": "#c7c4d8",
+          "on-primary": "#ffffff",
+          "primary": "#3525cd",
+          "surface-dim": "#d0dbed",
+          "on-tertiary-fixed": "#002114",
+          "surface-container-low": "#eff4ff",
+          "error-container": "#ffdad6",
+          "secondary-fixed-dim": "#a3cfcf",
+          "on-surface": "#121c2a",
+          "secondary-fixed": "#beebeb",
+          "background": "#f8f9ff",
+          "on-surface-variant": "#464555",
+          "secondary-container": "#beebeb",
+          "error": "#ba1a1a",
+          "inverse-on-surface": "#eaf1ff",
+          "surface-tint": "#4d44e3",
+          "on-secondary-fixed": "#002020",
+          "on-primary-container": "#dad7ff",
+          "outline": "#777587",
+          "primary-fixed-dim": "#c3c0ff",
+          "inverse-surface": "#27313f",
+          "surface": "#f8f9ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-lg": "1.25rem",
+          "gutter-desktop": "1.5rem",
+          "margin-tablet": "2rem",
+          "margin-desktop": "3rem",
+          "gutter": "1.25rem",
+          "margin": "1rem",
+          "space-md": "0.75rem",
+          "space-sm": "0.5rem",
+          "space-xl": "2rem",
+          "space-xs": "0.25rem"
+        },
+        "fontFamily": {
+          "headline-xl": [
+            "Inter"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "headline-lg": [
+            "Inter"
+          ],
+          "code-block": [
+            "JetBrains Mono"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Inter"
+          ],
+          "label-md": [
+            "JetBrains Mono"
+          ],
+          "headline-xl-mobile": [
+            "Inter"
+          ],
+          "headline-lg-mobile": [
+            "Inter"
+          ],
+          "label-sm": [
+            "JetBrains Mono"
+          ],
+          "headline-sm": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "headline-xl": [
+            "36px",
+            {
+              "lineHeight": "44px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-lg": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "code-block": [
+            "13px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "body-lg": [
+            "16px",
+            {
+              "lineHeight": "26px",
+              "fontWeight": "400"
+            }
+          ],
+          "body-md": [
+            "14px",
+            {
+              "lineHeight": "22px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-md": [
+            "22px",
+            {
+              "lineHeight": "28px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl-mobile": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg-mobile": [
+            "24px",
+            {
+              "lineHeight": "32px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-sm": [
+            "11px",
+            {
+              "lineHeight": "16px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-sm": [
+            "18px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-[#F1F8F5] text-[#2E2E38] font-body-md antialiased"><header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-[#D9E8E1]"><div class="h-14 w-full px-6 flex items-center justify-between max-w-7xl mx-auto"><div class="flex items-center gap-8"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg bg-[#E2F0EA] flex items-center justify-center text-[#1F4A40]"><span class="material-symbols-outlined text-[18px]">lock</span></div><span class="font-semibold text-[17px] tracking-tight text-[#2E2E38]">NoteVault</span><span class="px-2 py-0.5 text-xs rounded bg-[#E8F4EE] text-[#1F4A40] font-medium">Kasa</span></div><nav class="hidden md:flex items-center gap-5 text-sm"><a class="text-[#6B6B76] hover:text-[#2E2E38] transition-colors py-1" href="#">Tüm Notlar</a><a class="text-[#1F4A40] font-semibold py-1 border-b-2 border-[#1F4A40]" href="#">Kasa</a></nav></div><div class="flex items-center gap-3"><div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F4EE] text-[#1F4A40] text-xs font-medium"><span class="material-symbols-outlined text-[14px]">verified_user</span><span>Uçtan Uca Şifreli</span></div><img alt="Profile" class="w-7 h-7 rounded-full object-cover border border-[#D9E8E1]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy4YbXLA3rqVDyaOxJ-FnTnQVbQylndyib-1dObjVixm_LBjezej68gWNW3V5RM0BPt4wA55wVROOOz9kHJJvZ_Oj2FG5PyucSMghib_49-u68OSUOYZ5QJHtXZpev-v3NzLpnumiaGkCWDOLHrhV4ajNwQqBuIeaF0WRP_iZKSY9WCb-dRwJj3K2XrP-__fa7v-iMA4odfdNQz3JOeO2e6razTE9Y5d75wJpMSVw"/></div></div></header><main class="w-full pt-16 bg-inverse-surface min-h-screen"><div class="flex flex-col w-full relative min-h-[calc(100vh-4rem)] overflow-hidden"><!-- Background Vault Grid View (Calm pastel Vault notes grid) --><div class="absolute inset-0 bg-[#F1F8F5] pointer-events-none select-none p-6 md:p-12 overflow-hidden"><div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6"><div class="hidden md:block col-span-1"><div class="bg-white rounded-lg border border-[#D9E8E1] p-4 flex flex-col gap-2"><div class="px-3 py-2 rounded-md bg-[#E2F0EA] text-[#1F4A40] text-sm font-semibold flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">lock</span><span>Kasa Notları</span></div><div class="px-3 py-2 rounded-md text-[#6B6B76] text-sm flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">label</span><span>#finans</span></div><div class="px-3 py-2 rounded-md text-[#6B6B76] text-sm flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">label</span><span>#altyapı</span></div></div></div><div class="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-white rounded-lg border border-[#D9E8E1] p-5 shadow-sm flex flex-col gap-2"><div class="flex items-center justify-between text-xs text-[#6B6B76]"><span class="text-[#1F4A40] font-medium">#finans-kasa</span><span class="material-symbols-outlined text-[16px]">lock</span></div><h4 class="font-medium text-[16px] text-[#2E2E38]">İsviçre Kasa IBAN &amp; Swift</h4><p class="text-xs text-[#6B6B76] font-mono">CH93 0076 2011 6238 ••••</p></div><div class="bg-white rounded-lg border border-[#D9E8E1] p-5 shadow-sm flex flex-col gap-2"><div class="flex items-center justify-between text-xs text-[#6B6B76]"><span class="text-[#1F4A40] font-medium">#kimlik-bilgileri</span><span class="material-symbols-outlined text-[16px]">lock</span></div><h4 class="font-medium text-[16px] text-[#2E2E38]">AWS Prod IAM Yetkileri</h4><p class="text-xs text-[#6B6B76] font-mono">AKIAIOSFODNN7••••••••</p></div><div class="bg-white rounded-lg border border-[#D9E8E1] p-5 shadow-sm flex flex-col gap-2"><div class="flex items-center justify-between text-xs text-[#6B6B76]"><span class="text-[#1F4A40] font-medium">#kripto-cuzdan</span><span class="material-symbols-outlined text-[16px]">lock</span></div><h4 class="font-medium text-[16px] text-[#2E2E38]">Ledger 24-Kelime Tohumu</h4><p class="text-xs text-[#6B6B76] font-mono">venture absorb abandon elite ••••</p></div></div></div></div><!-- Modal Dim Overlay & Quiet Paper Card Container --><div class="relative z-10 w-full flex-1 flex items-center justify-center p-4 md:p-8 bg-[#2E2E38]/28 min-h-[calc(100vh-3.5rem)]"><div class="w-full max-w-[660px] bg-white rounded-lg border border-[#D9E8E1] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden text-[#2E2E38]"><!-- Header & Meta --><div class="px-6 py-4 border-b border-[#EAE7E2] flex items-center justify-between"><div class="flex items-center gap-1.5 text-[#6B6B76] text-xs font-normal"><span class="material-symbols-outlined text-[15px]">lock</span><span>Uçtan uca şifreli</span></div><div class="flex items-center gap-1"><button class="w-8 h-8 rounded-md text-[#6B6B76] hover:text-[#BA1A1A] hover:bg-[#FBEBEB] transition-colors flex items-center justify-center" title="Kayıttan Sil" type="button"><span class="material-symbols-outlined text-[18px]">delete</span></button><button class="w-8 h-8 rounded-md text-[#6B6B76] hover:text-[#2E2E38] hover:bg-[#F2EFEA] transition-colors flex items-center justify-center" title="Kapat" type="button"><span class="material-symbols-outlined text-[20px]">close</span></button></div></div><!-- Main Note Body --><div class="p-6 flex flex-col gap-5 overflow-y-auto max-h-[640px]"><!-- Note Title --><input class="w-full bg-transparent text-[22px] font-semibold text-[#2E2E38] focus:outline-none placeholder-[#A09FA8] border-b border-transparent focus:border-[#D9E8E1] pb-1 transition-colors" placeholder="Başlıksız Şifreli Not..." type="text" value="Sunucu Root SSH Anahtarları &amp; DB Bilgileri"/><!-- Soft Amber Critical Warning Box --><div class="p-3.5 rounded-[6px] bg-[#FBEFD5] border border-[#EAD9B8] text-[#6B4A10] flex items-start gap-2.5 text-xs leading-relaxed"><span class="material-symbols-outlined text-[17px] text-[#B07A1A] mt-0.5">info</span><div><strong class="font-medium text-[#6B4A10]">Önemli not:</strong> Bu anahtarlar yalnızca prodüksiyon sunucularında acil durum erişimi için kullanılmalıdır. Asla üçüncü taraf CI/CD kayıtlarına yazdırmayın.</div></div><!-- Sensitive Masked Secret Field --><div class="flex flex-col gap-1.5"><div class="flex items-center justify-between"><label class="text-xs font-medium text-[#6B6B76]">Master DB Parolası</label><span class="text-[11px] text-[#6B6B76]">Doğrulandı</span></div><div class="group relative flex items-center justify-between px-3.5 py-2.5 bg-[#FAF9F7] border border-[#E8E4DE] rounded-[6px]"><span class="font-mono text-sm tracking-widest text-[#2E2E38] select-none">••••••••••••••••••••••••</span><button class="flex items-center gap-1 text-xs text-[#6B6B76] hover:text-[#1F4A40] transition-colors px-2 py-0.5 rounded hover:bg-white border border-transparent hover:border-[#D9E8E1]" title="Parolayı Kopyala" type="button"><span class="material-symbols-outlined text-[14px]">content_copy</span><span>Kopyala</span></button></div></div><!-- Monospace Code Block Editor --><div class="flex flex-col gap-1.5"><div class="flex items-center justify-between"><label class="text-xs font-medium text-[#6B6B76]">id_ed25519_production_root (OpenSSH)</label><button class="flex items-center gap-1 text-xs text-[#6B6B76] hover:text-[#1F4A40] transition-colors px-2 py-0.5 rounded hover:bg-[#FAF9F7]" type="button"><span class="material-symbols-outlined text-[14px]">content_copy</span><span>Kopyala</span></button></div><div class="p-3.5 bg-[#F4F2EE] border border-[#E8E4DE] rounded-[6px] font-mono text-[12px] leading-relaxed text-[#2E2E38] overflow-x-auto"><pre class="whitespace-pre text-[#2E2E38]"><span class="text-[#8A8A94]">-----BEGIN OPENSSH PRIVATE KEY-----</span>
+<span class="text-[#3D7A5F]">b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAAB</span>
+<span class="text-[#6B5CA5]">NhAAAAAwEAAQAAAgEAvR6u5Xq+8QkLp9... [AES-256 ŞİFRELİ]</span>
+<span class="text-[#3D7A5F]">k4Y8U+93kM90xLP1c+Q52nEw8VnU2QW0... 98vYt2xLM0qP</span>
+<span class="text-[#3D7A5F]">4o9V27xMnOPqRt8VvN9w2mN01xLpq09v... V18nQp9xM02v</span>
+<span class="text-[#8A8A94]">-----END OPENSSH PRIVATE KEY-----</span></pre></div></div><!-- Additional Markdown Notes Area --><div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#6B6B76]">İlave Güvenlik Notları</label><textarea class="w-full p-3 rounded-[6px] bg-[#FAF9F7] border border-[#E8E4DE] text-[#2E2E38] text-[14px] leading-relaxed focus:outline-none focus:border-[#B2D8C9] placeholder-[#A09FA8] resize-none" rows="2">Bağlantı esnasında bastion sunucu (10.0.1.42) üzerinden tünelleme zorunludur. Port: 2209.</textarea></div></div><!-- Footer & Actions --><div class="px-6 py-3.5 border-t border-[#EAE7E2] bg-[#FAFAF8] flex flex-col sm:flex-row items-center justify-between gap-3"><div class="text-xs text-[#6B6B76]">Markdown destekli: <span class="text-[#2E2E38] font-medium">**kalın**</span>, <span class="text-[#2E2E38] italic">*italik*</span>, • liste, <code class="font-mono bg-[#EAE7E2] px-1 py-0.5 rounded text-[11px]">``` kod</code></div><div class="flex items-center gap-2 self-end sm:self-auto"><button class="px-3.5 py-1.5 rounded-[6px] text-xs text-[#6B6B76] hover:text-[#2E2E38] hover:bg-[#F2EFEA] transition-colors font-medium" type="button">Vazgeç</button><button class="px-4 py-1.5 rounded-[6px] bg-[#CFE8DE] hover:bg-[#BFE0D2] text-[#1F4A40] text-xs font-medium transition-colors" id="save-vault-btn" type="button">Bitti</button></div></div></div></div></div>
+<script>
+  (function () {
+    // Secret Toggle Interaction
+    const toggleSecretBtn = document.getElementById('toggle-secret-btn');
+    const passwordField = document.getElementById('password-field');
+    let isRevealed = false;
+    const plainSecret = 'k9#vF92!xmZ$90a-PqL@prod-access';
+    const maskedSecret = '••••••••••••••••••••••••••••••••••••••••••••';
+
+    if (toggleSecretBtn && passwordField) {
+      toggleSecretBtn.addEventListener('click', function () {
+        isRevealed = !isRevealed;
+        passwordField.textContent = isRevealed ? plainSecret : maskedSecret;
+        const icon = toggleSecretBtn.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.textContent = isRevealed ? 'visibility_off' : 'visibility';
+        }
+      });
+    }
+
+    // Masking Mode Toolbar Interaction
+    const maskToggleBtn = document.getElementById('mask-toggle-btn');
+    const maskIcon = document.getElementById('mask-icon');
+    const maskLabel = document.getElementById('mask-label');
+    let globalMaskActive = true;
+
+    if (maskToggleBtn && maskIcon && maskLabel) {
+      maskToggleBtn.addEventListener('click', function () {
+        globalMaskActive = !globalMaskActive;
+        maskIcon.textContent = globalMaskActive ? 'visibility_off' : 'visibility';
+        maskLabel.textContent = globalMaskActive ? 'Hassas Alan Maskele' : 'Maskeleri Kaldır';
+      });
+    }
+
+    // Interactive Feedback for Copy Buttons
+    const copySecretBtn = document.getElementById('copy-secret-btn');
+    if (copySecretBtn) {
+      copySecretBtn.addEventListener('click', function () {
+        const originalHtml = copySecretBtn.innerHTML;
+        copySecretBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">check</span><span>Kopyalandı!</span>';
+        setTimeout(() => {
+          copySecretBtn.innerHTML = originalHtml;
+        }, 1800);
+      });
+    }
+
+    const copyCodeBtn = document.getElementById('copy-code-btn');
+    if (copyCodeBtn) {
+      copyCodeBtn.addEventListener('click', function () {
+        const originalHtml = copyCodeBtn.innerHTML;
+        copyCodeBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">check</span> Alındı';
+        setTimeout(() => {
+          copyCodeBtn.innerHTML = originalHtml;
+        }, 1800);
+      });
+    }
+
+    // Pin Button Active State
+    const pinBtn = document.getElementById('pin-btn');
+    let isPinned = false;
+    if (pinBtn) {
+      pinBtn.addEventListener('click', function () {
+        isPinned = !isPinned;
+        pinBtn.classList.toggle('text-tertiary-fixed', isPinned);
+        pinBtn.classList.toggle('text-on-surface-variant', !isPinned);
+      });
+    }
+
+    // Save Button Simulation Animation
+    const saveVaultBtn = document.getElementById('save-vault-btn');
+    if (saveVaultBtn) {
+      saveVaultBtn.addEventListener('click', function () {
+        saveVaultBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>AES-256 İle Paketleniyor...</span>';
+        setTimeout(() => {
+          saveVaultBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>Kayıt Tamamlandı</span>';
+          setTimeout(() => {
+            saveVaultBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">lock</span><span>Şifrele ve Kaydet</span>';
+          }, 1500);
+        }, 800);
+      });
+    }
+  })();
+</script></main><footer class="w-full bg-[#F1F8F5] border-t border-[#D9E8E1] py-4"><div class="max-w-7xl mx-auto px-6 text-center text-[#6B6B76] text-xs">© 2024 NoteVault. AES-256 İstemci Tarafı Şifreleme. Sıfır Sunucu Erişimi.</div></footer></body></html>

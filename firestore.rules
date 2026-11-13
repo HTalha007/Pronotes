@@ -1,0 +1,205 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Path: /users/{userId}/notes/{noteId}
+// Document ID: NoteId (string)
+// Fields:
+//   - ownerId: string (required, immutable) - Must match parent {userId}
+//   - kind: string (optional, allowed: 'standard' | 'vault') - Note category
+//   - title: string (optional, max 1000 chars) - Title of the note
+//   - plainText: string (optional, max 1048576 chars) - Plaintext content/search preview
+//   - content: string | bytes | map | list (optional) - Yjs CRDT update / binary payload
+//   - tagIds: list of strings (optional, max 100 items) - Tag IDs associated with the note
+//   - encryptedPayload: map | string (optional) - Vault encrypted payload object or blob
+//   - iv: string | bytes (optional) - AES-GCM IV for vault note
+//   - ciphertext: string | bytes (optional) - AES-GCM ciphertext
+//   - version: int (optional, allowed: 1) - Payload schema version
+//   - createdAt: timestamp | number | string (optional, immutable) - Creation time
+//   - updatedAt: timestamp | number | string (optional) - Last update time
+//   - deletedAt: timestamp | number | string | null (optional) - Soft deletion tombstone
+//
+// Path: /users/{userId}/tags/{tagId}
+// Document ID: TagId (string)
+// Fields:
+//   - ownerId: string (required, immutable) - Must match parent {userId}
+//   - name: string (required, 1-100 chars) - Tag display name
+//   - color: string (optional, max 30 chars) - Hex color string
+//   - createdAt: timestamp | number | string (optional, immutable) - Creation time
+//   - updatedAt: timestamp | number | string (optional) - Last update time
+//   - deletedAt: timestamp | number | string | null (optional) - Soft deletion tombstone
+//
+// Path: /users/{userId}/vault/{vaultId}
+// Document ID: VaultId / config identifier
+// Fields:
+//   - ownerId: string (optional, immutable) - Must match parent {userId} if provided
+//   - kdfParams: map (optional) - Parameters for PBKDF2 (algorithm, hash, iterations, salt)
+//   - verifier: map | string (optional) - Encrypted verifier payload
+//   - kdfAlgorithm: string (optional, max 50 chars)
+//   - kdfHash: string (optional, max 50 chars)
+//   - kdfIterations: int (optional, min 100000)
+//   - kdfSalt: string | bytes (optional)
+//   - verifierIv: string | bytes (optional)
+//   - verifierCiphertext: string | bytes (optional)
+//   - verifierVersion: int (optional)
+//   - createdAt: timestamp | number | string (optional, immutable)
+//   - updatedAt: timestamp | number | string (optional)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestampField(val) {
+      return val is timestamp || val is number || val is string;
+    }
+
+    // ===============================================================
+    // Domain Validators: Notes
+    // ===============================================================
+
+    function isValidNoteData(userId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+        'id', 'ownerId', 'kind', 'title', 'plainText', 'content', 'tagIds',
+        'encryptedPayload', 'iv', 'ciphertext', 'version',
+        'createdAt', 'updatedAt', 'deletedAt'
+      ]) &&
+      data.ownerId is string &&
+      data.ownerId == userId &&
+      data.ownerId.size() <= 128 &&
+      (!('id' in data) || (data.id is string && data.id.size() <= 128)) &&
+      (!('kind' in data) || (data.kind is string && data.kind in ['standard', 'vault'])) &&
+      (!('title' in data) || (data.title is string && data.title.size() <= 1000)) &&
+      (!('plainText' in data) || (data.plainText is string && data.plainText.size() <= 1048576)) &&
+      (!('tagIds' in data) || (data.tagIds is list && data.tagIds.size() <= 100)) &&
+      (!('version' in data) || (data.version is int && data.version == 1)) &&
+      (!('createdAt' in data) || isValidTimestampField(data.createdAt)) &&
+      (!('updatedAt' in data) || isValidTimestampField(data.updatedAt)) &&
+      (!('deletedAt' in data) || data.deletedAt == null || isValidTimestampField(data.deletedAt));
+    }
+
+    function isValidNoteCreate(userId) {
+      return isValidNoteData(userId);
+    }
+
+    function isValidNoteUpdate(userId) {
+      return isValidNoteData(userId) &&
+        request.resource.data.ownerId == resource.data.ownerId &&
+        (!('id' in resource.data) || !('id' in request.resource.data) || request.resource.data.id == resource.data.id) &&
+        (!('createdAt' in resource.data) || !('createdAt' in request.resource.data) || request.resource.data.createdAt == resource.data.createdAt);
+    }
+
+    // ===============================================================
+    // Domain Validators: Tags
+    // ===============================================================
+
+    function isValidTagData(userId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+        'id', 'ownerId', 'name', 'color', 'createdAt', 'updatedAt', 'deletedAt'
+      ]) &&
+      data.ownerId is string &&
+      data.ownerId == userId &&
+      data.ownerId.size() <= 128 &&
+      (!('id' in data) || (data.id is string && data.id.size() <= 128)) &&
+      (!('name' in data) || (data.name is string && data.name.size() > 0 && data.name.size() <= 100)) &&
+      (!('color' in data) || (data.color is string && data.color.size() <= 30)) &&
+      (!('createdAt' in data) || isValidTimestampField(data.createdAt)) &&
+      (!('updatedAt' in data) || isValidTimestampField(data.updatedAt)) &&
+      (!('deletedAt' in data) || data.deletedAt == null || isValidTimestampField(data.deletedAt));
+    }
+
+    function isValidTagCreate(userId) {
+      return isValidTagData(userId);
+    }
+
+    function isValidTagUpdate(userId) {
+      return isValidTagData(userId) &&
+        request.resource.data.ownerId == resource.data.ownerId &&
+        (!('id' in resource.data) || !('id' in request.resource.data) || request.resource.data.id == resource.data.id) &&
+        (!('createdAt' in resource.data) || !('createdAt' in request.resource.data) || request.resource.data.createdAt == resource.data.createdAt);
+    }
+
+    // ===============================================================
+    // Domain Validators: Vault
+    // ===============================================================
+
+    function isValidVaultData(userId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+        'id', 'ownerId', 'kdfParams', 'verifier', 'kdfAlgorithm', 'kdfHash',
+        'kdfIterations', 'kdfSalt', 'verifierIv', 'verifierCiphertext',
+        'verifierVersion', 'createdAt', 'updatedAt'
+      ]) &&
+      (!('ownerId' in data) || (data.ownerId is string && data.ownerId == userId && data.ownerId.size() <= 128)) &&
+      (!('id' in data) || (data.id is string && data.id.size() <= 128)) &&
+      (!('kdfAlgorithm' in data) || (data.kdfAlgorithm is string && data.kdfAlgorithm.size() <= 50)) &&
+      (!('kdfHash' in data) || (data.kdfHash is string && data.kdfHash.size() <= 50)) &&
+      (!('kdfIterations' in data) || (data.kdfIterations is int && data.kdfIterations >= 100000)) &&
+      (!('verifierVersion' in data) || (data.verifierVersion is int && data.verifierVersion == 1)) &&
+      (!('createdAt' in data) || isValidTimestampField(data.createdAt)) &&
+      (!('updatedAt' in data) || isValidTimestampField(data.updatedAt));
+    }
+
+    function isValidVaultCreate(userId) {
+      return isValidVaultData(userId);
+    }
+
+    function isValidVaultUpdate(userId) {
+      return isValidVaultData(userId) &&
+        (!('ownerId' in resource.data) || !('ownerId' in request.resource.data) || request.resource.data.ownerId == resource.data.ownerId) &&
+        (!('id' in resource.data) || !('id' in request.resource.data) || request.resource.data.id == resource.data.id) &&
+        (!('createdAt' in resource.data) || !('createdAt' in request.resource.data) || request.resource.data.createdAt == resource.data.createdAt);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // User Notes Collection
+    match /users/{userId}/notes/{noteId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidNoteCreate(userId);
+      allow update: if isOwner(userId) && isValidNoteUpdate(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // User Tags Collection
+    match /users/{userId}/tags/{tagId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidTagCreate(userId);
+      allow update: if isOwner(userId) && isValidTagUpdate(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // User Vault Collection
+    match /users/{userId}/vault/{vaultId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidVaultCreate(userId);
+      allow update: if isOwner(userId) && isValidVaultUpdate(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // Default deny for all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

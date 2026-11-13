@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-container-highest": "#e4e2df",
+          "on-error-container": "#93000a",
+          "on-secondary": "#ffffff",
+          "on-primary-container": "#fffbff",
+          "surface-container-low": "#f5f3f0",
+          "on-background": "#1b1c1a",
+          "tertiary-fixed": "#ffe08a",
+          "inverse-surface": "#30312f",
+          "on-tertiary": "#ffffff",
+          "on-error": "#ffffff",
+          "secondary-fixed": "#bbeddc",
+          "surface-container-high": "#eae8e5",
+          "on-tertiary-fixed-variant": "#584400",
+          "tertiary-container": "#cca730",
+          "primary-container": "#5c6fc2",
+          "on-primary-fixed-variant": "#2c4090",
+          "error-container": "#ffdad6",
+          "primary-fixed-dim": "#b8c4ff",
+          "inverse-primary": "#b8c4ff",
+          "error": "#ba1a1a",
+          "secondary-fixed-dim": "#a0d1c1",
+          "inverse-on-surface": "#f2f0ed",
+          "on-surface": "#1b1c1a",
+          "on-secondary-fixed-variant": "#1f4f43",
+          "on-tertiary-fixed": "#241a00",
+          "surface-tint": "#4559aa",
+          "on-tertiary-container": "#4f3d00",
+          "tertiary": "#745b00",
+          "secondary": "#38675a",
+          "on-secondary-container": "#3e6d60",
+          "surface-container": "#efeeeb",
+          "on-surface-variant": "#454651",
+          "tertiary-fixed-dim": "#eac24a",
+          "surface-container-lowest": "#ffffff",
+          "on-secondary-fixed": "#002019",
+          "outline-variant": "#c5c5d3",
+          "secondary-container": "#bbeddc",
+          "surface-dim": "#dbdad7",
+          "surface-bright": "#fbf9f6",
+          "surface-variant": "#e4e2df",
+          "on-primary": "#ffffff",
+          "outline": "#757682",
+          "primary": "#4356a7",
+          "background": "#fbf9f6",
+          "primary-fixed": "#dde1ff",
+          "surface": "#fbf9f6",
+          "on-primary-fixed": "#001354"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-lg": "1.5rem",
+          "space-xl": "2.25rem",
+          "space-xs": "0.25rem",
+          "margin": "1.5rem",
+          "space-md": "1rem",
+          "space-sm": "0.5rem",
+          "gutter": "1.25rem"
+        },
+        "fontFamily": {
+          "display-mobile": [
+            "Inter"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "display": [
+            "Inter"
+          ],
+          "headline-lg": [
+            "Inter"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "label-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Inter"
+          ],
+          "code": [
+            "JetBrains Mono"
+          ]
+        },
+        "fontSize": {
+          "display-mobile": [
+            "26px",
+            {
+              "lineHeight": "34px",
+              "fontWeight": "600"
+            }
+          ],
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "display": [
+            "32px",
+            {
+              "lineHeight": "40px",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "24px",
+            {
+              "lineHeight": "32px",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "15px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "500"
+            }
+          ],
+          "label-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-sm": [
+            "17px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "20px",
+            {
+              "lineHeight": "28px",
+              "fontWeight": "500"
+            }
+          ],
+          "code": [
+            "13px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-[#FBF9F6] text-[#2E2E38] font-body-md text-body-md"><aside class="fixed left-0 top-0 h-full w-[232px] bg-white border-r border-[#E8E4DE] z-40 flex flex-col justify-between py-6"><div class="flex flex-col gap-6"><div class="flex items-center gap-2.5 px-5"><div class="w-7 h-7 rounded-md bg-[#6F82D6] flex items-center justify-center text-white"><span class="material-symbols-outlined text-[18px]">description</span></div><span class="font-headline-sm text-[17px] font-semibold tracking-tight text-[#2E2E38]">NoteVault</span></div><nav class="flex flex-col gap-1 px-3"><a aria-current="page" class="flex items-center justify-between px-3 py-2 rounded-lg bg-[#EFEFEB] text-[#2E2E38] font-medium" data-path="notlar" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[19px] text-[#5C6FC2]">edit_note</span><span class="text-[14px]">Notlar</span></div><span class="text-[12px] text-[#787885]">24</span></a><a class="flex items-center justify-between px-3 py-2 rounded-lg text-[#555562] hover:bg-[#F5F3F0] transition-colors" data-path="kasa" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[19px] text-[#787885]">lock</span><span class="text-[14px]">Kasa</span></div><span class="text-[11px] text-[#787885]">Şifreli</span></a></nav></div><div class="px-3"><div class="flex items-center gap-2.5 p-3 rounded-lg bg-[#F5F3F0] border border-[#E8E4DE]/60 text-[#555562]"><span class="material-symbols-outlined text-[18px] text-[#38675A]">verified_user</span><div class="flex flex-col"><span class="text-[12px] font-semibold text-[#2E2E38]">Lokal Depolama</span><span class="text-[11px] text-[#787885]">Sıfır Bilgi Güvenliği</span></div></div></div></aside><div class="pl-[232px]"><header class="fixed top-0 left-[232px] right-0 h-16 bg-[#FBF9F6] border-b border-[#E8E4DE] z-30 flex items-center justify-between px-8"><div class="flex-1 max-w-md"><div class="flex items-center gap-2.5 bg-white border border-[#E8E4DE] px-3.5 py-1.5 rounded-lg"><span class="material-symbols-outlined text-[#8A8A94] text-[18px]">search</span><input class="w-full bg-transparent border-0 outline-none text-[#2E2E38] placeholder:text-[#8A8A94] text-[13px]" placeholder="Notlarda ara..." readonly="" type="text"/></div></div><div class="flex items-center gap-5"><div class="flex items-center gap-1.5 text-[12px] text-[#555562]"><span class="material-symbols-outlined text-[16px] text-[#38675A]">cloud_done</span><span>Kaydedildi</span></div><div class="w-8 h-8 rounded-full bg-[#E0E5F8] text-[#2F3A6B] flex items-center justify-center font-medium text-[12px] select-none">NV</div></div></header><main class="relative pt-16 bg-[#FBF9F6] min-h-screen"><div class="flex flex-col w-full relative min-h-[calc(100vh-4rem)]">
+<!-- Background Notes Grid (Clean, Calm Paper Tone, No Blur) -->
+<div class="w-full px-8 py-8 select-none pointer-events-none">
+<!-- Quick Note Bar -->
+<div class="max-w-2xl mx-auto mb-8 bg-white border border-[#E8E4DE] rounded-lg p-3 px-4 flex items-center justify-between">
+<span class="text-[13px] text-[#8A8A94]">Hızlı bir not yazın...</span>
+<div class="flex items-center gap-2 text-[#8A8A94]">
+<span class="material-symbols-outlined text-[18px]">check_box</span>
+<span class="material-symbols-outlined text-[18px]">image</span>
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</div>
+</div>
+<!-- Pinned Category -->
+<div class="mb-6">
+<div class="flex items-center gap-2 mb-3">
+<span class="text-[11px] uppercase tracking-wider text-[#8A8A94] font-medium">Sabitlenenler</span>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<!-- Card 1 -->
+<div class="bg-white border border-[#E8E4DE] p-4 rounded-lg flex flex-col justify-between h-40">
+<div class="flex flex-col gap-1.5">
+<h4 class="text-[15px] font-semibold text-[#2E2E38] truncate">Sistem Mimarisi v2</h4>
+<p class="text-[13px] text-[#555562] line-clamp-3 leading-relaxed">Dağıtık mimaride uçtan uca şifreleme ve istemci tarafı senkronizasyon prensipleri.</p>
+</div>
+<div class="flex items-center justify-between text-[#8A8A94] text-[12px]">
+<span>Dün, 18:40</span>
+<span>#mimari</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white border border-[#E8E4DE] p-4 rounded-lg flex flex-col justify-between h-40">
+<div class="flex flex-col gap-1.5">
+<h4 class="text-[15px] font-semibold text-[#2E2E38] truncate">Veritabanı İndeksleme Stratejileri</h4>
+<p class="text-[13px] text-[#555562] line-clamp-3 leading-relaxed">B-Tree ve LSM-Tree yapıları arasındaki bellek ayak izi kıyaslamaları.</p>
+</div>
+<div class="flex items-center justify-between text-[#8A8A94] text-[12px]">
+<span>2 gün önce</span>
+<span>#performans</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white border border-[#E8E4DE] p-4 rounded-lg flex flex-col justify-between h-40">
+<div class="flex flex-col gap-1.5">
+<h4 class="text-[15px] font-semibold text-[#2E2E38] truncate">UI Mikro Etkileşim Kuralları</h4>
+<p class="text-[13px] text-[#555562] line-clamp-3 leading-relaxed">Yumuşak geçişler, haptik hissi uyandıran mikro animasyonlar ve kontrast hiyerarşisi.</p>
+</div>
+<div class="flex items-center justify-between text-[#8A8A94] text-[12px]">
+<span>3 gün önce</span>
+<span>#tasarım</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Others Category -->
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="text-[11px] uppercase tracking-wider text-[#8A8A94] font-medium">Diğer Notlar</span>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-white border border-[#E8E4DE] p-4 rounded-lg h-32"></div>
+<div class="bg-white border border-[#E8E4DE] p-4 rounded-lg h-32"></div>
+<div class="bg-white border border-[#E8E4DE] p-4 rounded-lg h-32"></div>
+</div>
+</div>
+</div>
+<!-- Focused Note Editor Modal Backdrop (Flat dim overlay, no blur) -->
+<div class="fixed inset-0 top-16 left-[232px] bg-[rgba(46,46,56,0.28)] z-50 flex items-center justify-center p-6 overflow-y-auto" id="note-modal-backdrop">
+<!-- Restyled Modal Container: White surface, 8px radius, 1px border #E8E4DE, soft shadow -->
+<div class="w-full max-w-[720px] bg-white rounded-[8px] border border-[#E8E4DE] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden my-auto">
+<!-- Modal Header: Only simple ghost icon buttons for Delete and Close -->
+<div class="flex items-center justify-end px-6 pt-5 pb-1">
+<div class="flex items-center gap-1">
+<!-- Delete Action -->
+<button class="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#8A8A94] hover:text-[#BA1A1A] hover:bg-[#F5F3F0] transition-colors" id="delete-btn" title="Notu sil">
+<span class="material-symbols-outlined text-[19px]">delete</span>
+</button>
+<!-- Close Modal -->
+<button class="w-8 h-8 rounded-[6px] flex items-center justify-center text-[#8A8A94] hover:text-[#2E2E38] hover:bg-[#F5F3F0] transition-colors" id="close-modal-btn" title="Kapat">
+<span class="material-symbols-outlined text-[19px]">close</span>
+</button>
+</div>
+</div>
+<!-- Modal Body -->
+<div class="flex flex-col px-6 pt-1 pb-4">
+<!-- Title Input: 24px semibold (#2E2E38), sentence case -->
+<input class="w-full bg-transparent text-[24px] leading-[32px] font-semibold text-[#2E2E38] focus:outline-none placeholder:text-[#8A8A94] tracking-tight pb-3" id="editor-title" placeholder="Not başlığı..." type="text" value="Haftalık Planlama &amp; Tasarım Notları"/>
+<!-- Body Text: 15px with 1.6 line height in soft charcoal (#2E2E38) -->
+<div class="flex flex-col gap-3.5 text-[15px] leading-[1.6] text-[#2E2E38]">
+<p>
+            Modern uygulamalarda istemci tarafı gizliliği korumak için <strong class="font-semibold text-[#2E2E38]">kalın (bold)</strong> mülkiyet belirteçleri ve <em class="italic text-[#2E2E38]">italik (italic)</em> ödünç alma (borrowing) mekanizması ile sıfır maliyetli soyutlamalar tercih edilmelidir. Bellek sızıntılarını önlerken veri güvenliğini donanım seviyesinde teminat altına alıyoruz.
+          </p>
+<!-- Bullet List: Clean with soft dots -->
+<div class="flex flex-col gap-2 py-0.5 pl-1">
+<div class="flex items-start gap-2.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#8A8A94] mt-[9px] shrink-0"></span>
+<span><strong class="font-semibold text-[#2E2E38]">AES-256-GCM</strong> ile istemci tarafı simetrik şifreleme ve kimlik doğrulama etiketi kontrolü</span>
+</div>
+<div class="flex items-start gap-2.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#8A8A94] mt-[9px] shrink-0"></span>
+<span><strong class="font-semibold text-[#2E2E38]">PBKDF2 / Argon2id</strong> anahtar türetme fonksiyonu yardımıyla ana parola güçlendirmesi</span>
+</div>
+<div class="flex items-start gap-2.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#8A8A94] mt-[9px] shrink-0"></span>
+<span>WebAssembly katmanında <strong class="font-semibold text-[#2E2E38]">Web Crypto API</strong> ile sıfır-bilgi (zero-knowledge) entegrasyonu</span>
+</div>
+</div>
+<!-- Code Block: light warm-gray box (#F4F2EE) with 1px border #E8E4DE and 4px radius. No filename header bar, muted tones, ghost copy icon on hover -->
+<div class="relative group my-1 rounded-[4px] bg-[#F4F2EE] border border-[#E8E4DE] p-3.5">
+<button class="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[11px] font-mono text-[#8A8A94] hover:text-[#2E2E38] bg-white/80 border border-[#E8E4DE] px-2 py-0.5 rounded-[4px]" id="copy-code-btn" title="Kodu kopyala">
+<span class="material-symbols-outlined text-[13px]">content_copy</span>
+<span id="copy-text">Kopyala</span>
+</button>
+<pre class="font-mono text-[13px] leading-[20px] overflow-x-auto text-[#2E2E38] select-text"><code><span class="text-[#6B5CA5]">fn</span> <span class="text-[#3B6AA0]">encrypt_note</span>(content: &amp;[<span class="text-[#2E2E38]">u8</span>], key: &amp;<span class="text-[#2E2E38]">Key</span>) -&gt; <span class="text-[#3B6AA0]">Result</span>&lt;<span class="text-[#2E2E38]">Ciphertext</span>, <span class="text-[#BA1A1A]">CryptoError</span>&gt; {
+    <span class="text-[#6B5CA5]">let</span> cipher = <span class="text-[#3B6AA0]">Aes256Gcm</span>::new(key);
+    cipher.encrypt(nonce, content)
+}</code></pre>
+</div>
+<!-- Inline code with very light warm gray background (#F4F2EE), 4px radius and 13px monospace -->
+<p class="text-[13px] text-[#555562]">
+            Tüm veri blokları oturum sonlandığında bellekten güvenli şekilde <code class="font-mono text-[13px] bg-[#F4F2EE] border border-[#E8E4DE]/60 px-1.5 py-0.5 rounded-[4px] text-[#2E2E38]">zeroize</code> edilmektedir.
+          </p>
+</div>
+</div>
+<!-- Modal Footer: One-line markdown hint & Primary 'Bitti' button -->
+<div class="flex items-center justify-between px-6 py-4 border-t border-[#E8E4DE] bg-white">
+<div class="text-[12px] text-[#8A8A94] select-none font-mono">
+<span>Markdown destekli: **kalın**, *italik*, • liste, ``` kod</span>
+</div>
+<button class="inline-flex items-center justify-center px-4 py-1.5 rounded-[6px] bg-[#DDE3FA] hover:bg-[#CBD5F5] text-[#2F3A6B] text-[13px] font-medium transition-colors cursor-pointer" id="save-finish-btn">
+          Bitti
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  const copyBtn = document.getElementById('copy-code-btn');
+  const copyText = document.getElementById('copy-text');
+  const closeBtn = document.getElementById('close-modal-btn');
+  const finishBtn = document.getElementById('save-finish-btn');
+  const backdrop = document.getElementById('note-modal-backdrop');
+
+  if (copyBtn && copyText) {
+    copyBtn.addEventListener('click', () => {
+      const codeSnippet = `fn encrypt_note(content: &[u8], key: &Key) -> Result<Ciphertext, CryptoError> {\n    let cipher = Aes256Gcm::new(key);\n    cipher.encrypt(nonce, content)\n}`;
+      navigator.clipboard?.writeText(codeSnippet).then(() => {
+        copyText.textContent = 'Kopyalandı';
+        setTimeout(() => {
+          copyText.textContent = 'Kopyala';
+        }, 1800);
+      });
+    });
+  }
+
+  const handleClose = () => {
+    if (backdrop) {
+      backdrop.classList.add('hidden');
+      setTimeout(() => {
+        backdrop.classList.remove('hidden');
+      }, 1500);
+    }
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', handleClose);
+  if (finishBtn) finishBtn.addEventListener('click', handleClose);
+</script></main></div></body></html>

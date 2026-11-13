@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_dashboard" name="shell-type"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: "#FAF8F5",
+            card: "#FFFFFF",
+            border: "#E8E4DE",
+            "border-subtle": "#F0EDE8",
+            "code-bg": "#F4F2EE",
+            "text-primary": "#2E2E38",
+            "text-secondary": "#6B6B76",
+            "text-muted": "#9A9AA2",
+            "nav-active-bg": "#E8ECFB",
+            "nav-active-text": "#2F3A6B",
+            code: {
+              kw: "#6B5CA5",
+              str: "#3D7A5F",
+              cmt: "#8A8A94"
+            }
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          },
+          borderRadius: {
+            card: "8px",
+            btn: "6px",
+            input: "6px",
+            code: "4px"
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #FAF8F5;
+      color: #2E2E38;
+      font-family: 'Inter', sans-serif;
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-paper text-text-primary antialiased min-h-screen">
+<!-- Slim 232px Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[232px] bg-card border-r border-border z-50 flex flex-col justify-between py-5 px-3">
+<div class="flex flex-col gap-6">
+<!-- App Brand -->
+<div class="flex items-center gap-2.5 px-3 py-1">
+<div class="w-6 h-6 rounded-[6px] bg-nav-active-bg flex items-center justify-center text-nav-active-text">
+<span class="material-symbols-outlined text-[17px]">edit_note</span>
+</div>
+<span class="text-[15px] font-semibold text-text-primary">NoteVault</span>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1">
+<a class="flex items-center justify-between px-3 py-2 rounded-btn bg-nav-active-bg text-nav-active-text text-[14px] font-medium transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px]">description</span>
+<span>Notlar</span>
+</div>
+<span class="text-[13px] text-text-secondary font-normal">24</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-btn text-text-secondary hover:bg-paper hover:text-text-primary text-[14px] font-normal transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span>Kasa</span>
+</div>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Wrapper with Topbar -->
+<div class="pl-[232px]">
+<!-- Top Navigation Header -->
+<header class="fixed top-0 left-[232px] right-0 h-14 bg-paper/90 backdrop-blur border-b border-border z-40 flex items-center justify-between px-8">
+<!-- Search Bar -->
+<div class="w-full max-w-md">
+<div class="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-input">
+<span class="material-symbols-outlined text-text-muted text-[18px]">search</span>
+<input class="w-full bg-transparent border-0 outline-none text-[13px] text-text-primary placeholder:text-text-muted p-0 focus:ring-0" placeholder="Notlarda ara..." type="text"/>
+</div>
+</div>
+<!-- Right Sync & Avatar -->
+<div class="flex items-center gap-5">
+<!-- Quiet sync indicator -->
+<div class="flex items-center gap-1.5 text-text-secondary text-[13px]">
+<span class="material-symbols-outlined text-[15px] text-text-muted">cloud_done</span>
+<span>Kaydedildi</span>
+</div>
+<!-- Initials Avatar -->
+<div class="w-8 h-8 rounded-full bg-[#E4E8EE] text-[#4A5568] flex items-center justify-center text-[12px] font-medium">
+          AY
+        </div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-20 px-8 pb-16 max-w-6xl mx-auto flex flex-col gap-7">
+<!-- Quick Note Input Area -->
+<div class="w-full max-w-2xl mx-auto">
+<div class="bg-card border border-border rounded-card p-3 shadow-none transition-colors" id="quick-note-container">
+<div class="flex items-center justify-between cursor-text" id="quick-note-collapsed">
+<span class="text-[14px] text-text-muted select-none pl-1">Bir not yazın...</span>
+<div class="flex items-center gap-1 text-text-secondary">
+<button class="p-1.5 rounded-btn hover:bg-paper transition-colors" title="Liste" type="button">
+<span class="material-symbols-outlined text-[18px]">checklist</span>
+</button>
+<button class="p-1.5 rounded-btn hover:bg-paper transition-colors" title="Kod" type="button">
+<span class="material-symbols-outlined text-[18px]">code</span>
+</button>
+</div>
+</div>
+<!-- Expanded Note Editor -->
+<div class="hidden flex-col gap-2.5 pt-1" id="quick-note-expanded">
+<input class="w-full bg-transparent border-0 outline-none p-1 text-[15px] font-semibold text-text-primary placeholder:text-text-muted focus:ring-0" placeholder="Başlık" type="text"/>
+<textarea class="w-full bg-transparent border-0 outline-none p-1 text-[14px] text-text-primary placeholder:text-text-muted focus:ring-0 resize-none leading-relaxed" placeholder="Bir not yazın..." rows="3"></textarea>
+<div class="flex items-center justify-between pt-2 border-t border-border-subtle">
+<div class="flex items-center gap-1 text-text-secondary">
+<button class="p-1.5 rounded-btn hover:bg-paper transition-colors" title="Madde imi" type="button">
+<span class="material-symbols-outlined text-[17px]">format_list_bulleted</span>
+</button>
+<button class="p-1.5 rounded-btn hover:bg-paper transition-colors" title="Kod bloğu" type="button">
+<span class="material-symbols-outlined text-[17px]">code</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-btn text-[13px] text-text-secondary hover:bg-paper transition-colors" id="quick-note-close" type="button">
+                  Kapat
+                </button>
+<button class="px-3 py-1.5 rounded-btn bg-nav-active-text text-white text-[13px] font-medium transition-colors hover:bg-opacity-90" type="button">
+                  Kaydet
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Notes Stream / Header Bar -->
+<div class="flex items-center justify-between text-[13px] text-text-secondary pt-1">
+<div class="flex items-center gap-2">
+<span class="font-medium text-text-primary">Tüm notlar</span>
+<span class="text-text-muted">·</span>
+<span>24 not</span>
+</div>
+<div class="text-text-muted">
+          Son güncellenme sırasına göre
+        </div>
+</div>
+<!-- Notes Masonry Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+<!-- Note 1: Alışveriş Listesi -->
+<article class="bg-card border border-border rounded-card p-4 transition-shadow hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col gap-3">
+<h3 class="text-[15px] font-semibold text-text-primary leading-tight">Alışveriş listesi</h3>
+<ul class="flex flex-col gap-2 text-[15px] leading-[1.6] text-text-secondary">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-text-muted">check_box</span>
+<span class="line-through text-text-muted">Yulaf sütü</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">check_box_outline_blank</span>
+<span>Filtre kahve çekirdeği</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">check_box_outline_blank</span>
+<span>Zeytinyağı</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-text-secondary">check_box_outline_blank</span>
+<span>Defter</span>
+</li>
+</ul>
+<div class="pt-2 text-[13px] text-text-muted">Bugün, 14:20</div>
+</article>
+<!-- Note 2: Haftalık Kitap & Makale Notları -->
+<article class="bg-card border border-border rounded-card p-4 transition-shadow hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col gap-2.5">
+<h3 class="text-[15px] font-semibold text-text-primary leading-tight">Haftalık kitap ve makale notları</h3>
+<p class="text-[15px] leading-[1.6] text-text-secondary">
+            Günde yarım saat kesintisiz okuma rutini odaklanma süresini belirgin şekilde artırıyor. Dağıtık sistemlerde veri tutarlılığı modelleri üzerine okurken lead-follower replikasyonunda ağ gecikmelerini minimize eden yöntemler dikkatimi çekti.
+          </p>
+<div class="pt-2 text-[13px] text-text-muted">Dün, 19:40</div>
+</article>
+<!-- Note 3: İstanbul Hafta Sonu Kaçamağı -->
+<article class="bg-card border border-border rounded-card p-4 transition-shadow hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col gap-3">
+<h3 class="text-[15px] font-semibold text-text-primary leading-tight">İstanbul hafta sonu kaçamağı</h3>
+<div class="flex flex-col gap-1.5 text-[15px] leading-[1.6] text-text-secondary">
+<div><span class="text-text-primary font-medium">Cumartesi:</span> Moda sahil yürüyüşü, Arkaoda kahve molası ve sahaflar çarşısı.</div>
+<div><span class="text-text-primary font-medium">Pazar:</span> Kuzguncuk bostanı, fırından taze ekmek, vapurla Karaköy geçişi ve sergi ziyareti.</div>
+</div>
+<div class="pt-2 text-[13px] text-text-muted">12 Ekim</div>
+</article>
+<!-- Note 4: Ekip Senkronizasyon Toplantısı -->
+<article class="bg-card border border-border rounded-card p-4 transition-shadow hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col gap-2.5">
+<h3 class="text-[15px] font-semibold text-text-primary leading-tight">Ekip senkronizasyon toplantısı</h3>
+<ul class="flex flex-col gap-1.5 text-[15px] leading-[1.6] text-text-secondary list-disc pl-4">
+<li>Kullanıcı arayüzünde sadeleşme adımları ve test sonuçları</li>
+<li>Çevrimdışı yerel veri tabanı senkronizasyonunda gecikme süreleri</li>
+<li>Yeni sürüm için hazırlanan dokümantasyon taslağının gözden geçirilmesi</li>
+</ul>
+<div class="pt-2 text-[13px] text-text-muted">10 Ekim</div>
+</article>
+<!-- Note 5: Hızlı Yardımcı Fonksiyon (Kod Snippet) -->
+<article class="bg-card border border-border rounded-card p-4 transition-shadow hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col gap-3">
+<h3 class="text-[15px] font-semibold text-text-primary leading-tight">Hızlı yardımcı fonksiyon</h3>
+<p class="text-[15px] leading-[1.6] text-text-secondary">
+            Gecikmeli metin aramaları için kullanılan debounced işlev yapısı:
+          </p>
+<div class="bg-code-bg border border-border rounded-code p-3 font-mono text-[12px] leading-relaxed text-text-primary overflow-x-auto">
+<span class="text-code-cmt">// Belirtilen süre boyunca çağrıları bekletir</span><br/>
+<span class="text-code-kw">function</span> <span class="text-text-primary">debounce</span>(fn, ms = 300) {<br/>
+              <span class="text-code-kw">let</span> timer;<br/>
+              <span class="text-code-kw">return</span> (...args) =&gt; {<br/>
+                clearTimeout(timer);<br/>
+                timer = setTimeout(() =&gt; fn(...args), ms);<br/>
+              };<br/>
+            }
+          </div>
+<div class="pt-1 text-[13px] text-text-muted">8 Ekim</div>
+</article>
+</div>
+</main>
+</div>
+<script>
+    (function() {
+      const collapsed = document.getElementById('quick-note-collapsed');
+      const expanded = document.getElementById('quick-note-expanded');
+      const closeBtn = document.getElementById('quick-note-close');
+
+      if (collapsed && expanded && closeBtn) {
+        collapsed.addEventListener('click', () => {
+          collapsed.classList.add('hidden');
+          expanded.classList.remove('hidden');
+          const input = expanded.querySelector('input');
+          if (input) input.focus();
+        });
+
+        closeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          expanded.classList.add('hidden');
+          collapsed.classList.remove('hidden');
+        });
+      }
+    })();
+  </script>
+</body></html>
