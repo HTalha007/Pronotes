@@ -7,6 +7,12 @@
     background-color: #FAF8F5;
     color: #2E2E38;
     font-family: 'Inter', sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .dark body {
+    background-color: #18181B;
+    color: #EDEDF0;
   }
 }
 
@@ -25,8 +31,16 @@
   border-radius: 3px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #3F3F4E;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #D5D0C8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #525266;
 }
 
 /* Tiptap editor typography styling */
@@ -43,6 +57,10 @@
   pointer-events: none;
 }
 
+.dark .ProseMirror p.is-editor-empty:first-child::before {
+  color: #71717A;
+}
+
 .ProseMirror pre {
   background: #F4F2EE;
   color: #2E2E38;
@@ -53,6 +71,12 @@
   margin: 0.5rem 0;
 }
 
+.dark .ProseMirror pre {
+  background: #282833;
+  color: #EDEDF0;
+  border-color: #3F3F4E;
+}
+
 .ProseMirror code {
   background: #F4F2EE;
   color: #6B5CA5;
@@ -60,6 +84,11 @@
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-size: 0.875em;
+}
+
+.dark .ProseMirror code {
+  background: #282833;
+  color: #A78BFA;
 }
 
 .ProseMirror ul {
@@ -79,4 +108,9 @@
   padding-left: 1rem;
   color: #6B6B76;
   margin: 0.5rem 0;
+}
+
+.dark .ProseMirror blockquote {
+  border-left-color: #3F3F4E;
+  color: #A1A1AA;
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { EncryptedPayload } from '@pronotes/core';
 import { cryptoWorkerClient } from '../lib/crypto-worker-client';
+import { useNotesStore } from './notesStore';
 
 interface VaultState {
   isUnlocked: boolean;
@@ -12,6 +13,7 @@ interface VaultState {
   setupVault: (password: string) => Promise<boolean>;
   unlockVault: (password: string) => Promise<boolean>;
   lockVault: () => Promise<void>;
+  resetVault: () => void;
   clearError: () => void;
 }
 
@@ -98,7 +100,23 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
   lockVault: async () => {
     await cryptoWorkerClient.lockVault();
+    useNotesStore.getState().clearVaultCache();
     set({ isUnlocked: false, error: null });
+  },
+
+  resetVault: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('pronotes_vault_salt');
+      localStorage.removeItem('pronotes_vault_verifier');
+    }
+    useNotesStore.getState().clearVaultCache();
+    set({
+      isUnlocked: false,
+      isInitialized: false,
+      vaultSalt: null,
+      vaultVerifier: null,
+      error: null,
+    });
   },
 
   clearError: () => set({ error: null }),

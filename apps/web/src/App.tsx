@@ -1,21 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { NoteCard } from './components/NoteCard';
 import { NoteModal } from './components/NoteModal';
 import { VaultUnlockModal } from './components/VaultUnlockModal';
 import { AuthModal } from './components/AuthModal';
+import { SharedNoteViewer } from './components/SharedNoteViewer';
+import { ShortcutsHelpModal } from './components/ShortcutsHelpModal';
+import { parseSharedNoteFromUrl, SharedNoteData } from './lib/note-export';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotesStore } from './stores/notesStore';
 import { useVaultStore } from './stores/vaultStore';
 import { useTagsStore } from './stores/tagsStore';
 import { useNavigationStore } from './stores/navigationStore';
 import { useAuthStore } from './stores/authStore';
+import { useThemeStore } from './stores/themeStore';
 import { domain } from '@pronotes/core';
-import { Shield, FilePlus } from 'lucide-react';
+import { Shield, FilePlus, Lock } from 'lucide-react';
 import { Button } from '@pronotes/ui';
 
 export function App() {
-  const { notes, activeFilter, searchQuery, loadNotes, setActiveFilter } = useNotesStore();
+  const { notes, activeFilter, searchQuery, loadNotes, setActiveFilter, decryptedVaultCache } =
+    useNotesStore();
   const { isUnlocked } = useVaultStore();
   const { selectedTagId, setSelectedTagId } = useTagsStore();
   const { currentRoute, navigateTo } = useNavigationStore();
@@ -26,6 +32,45 @@ export function App() {
   const [selectedNote, setSelectedNote] = useState<domain.Note | null>(null);
   const [isVaultUnlockOpen, setIsVaultUnlockOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
+  const [sharedNoteData, setSharedNoteData] = useState<SharedNoteData | null>(() =>
+    parseSharedNoteFromUrl(),
+  );
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { lockVault } = useVaultStore();
+  const { toggleTheme } = useThemeStore();
+
+  useKeyboardShortcuts(
+    {
+      onNewStandardNote: () => handleOpenStandardNote(),
+      onNewVaultNote: () => handleOpenVaultNote(),
+      onToggleVault: () => {
+        if (isUnlocked) {
+          lockVault();
+        } else {
+          setIsVaultUnlockOpen(true);
+        }
+      },
+      onFocusSearch: () => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.select();
+        }
+      },
+      onOpenShortcutsHelp: () => setIsShortcutsHelpOpen(true),
+      onToggleTheme: () => toggleTheme(),
+    },
+    !isNoteModalOpen && !isVaultUnlockOpen && !isAuthModalOpen && !isShortcutsHelpOpen && !sharedNoteData,
+  );
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setSharedNoteData(parseSharedNoteFromUrl());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     loadNotes();
@@ -106,20 +151,28 @@ export function App() {
     }
 
     if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
       if (note.kind === 'standard') {
-        const query = searchQuery.toLowerCase();
         const matchesTitle = note.title.toLowerCase().includes(query);
         const matchesContent = note.plainText.toLowerCase().includes(query);
         return matchesTitle || matchesContent;
+      } else if (note.kind === 'vault') {
+        if (!isUnlocked) return false;
+        const cached = decryptedVaultCache[note.id];
+        if (cached) {
+          const matchesTitle = cached.title.toLowerCase().includes(query);
+          const matchesContent = cached.plainText.toLowerCase().includes(query);
+          return matchesTitle || matchesContent;
+        }
+        return false;
       }
-      return true;
     }
 
     return true;
   });
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-paper">
+    <div className="flex h-screen w-screen overflow-hidden bg-paper dark:bg-[#18181B] text-[#2E2E38] dark:text-[#EDEDF0] transition-colors">
       {/* 232px Sidebar with Tag management */}
       <Sidebar onOpenVaultModal={() => setIsVaultUnlockOpen(true)} />
 
@@ -129,27 +182,47 @@ export function App() {
           onNewStandardNote={() => handleOpenStandardNote()}
           onNewVaultNote={() => handleOpenVaultNote()}
           onOpenAuthModal={() => setIsAuthModalOpen(true)}
+          onOpenShortcutsHelp={() => setIsShortcutsHelpOpen(true)}
+          searchInputRef={searchInputRef}
         />
 
         {/* Content Container */}
         <main className="flex-1 overflow-y-auto p-6">
-          {filteredNotes.length === 0 ? (
+          {activeFilter === 'vault' && !isUnlocked ? (
             <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto p-6">
-              <div className="w-12 h-12 rounded-full bg-[#F4F2EE] border border-[#E8E4DE] flex items-center justify-center text-[#6B6B76] mb-3">
+              <div className="w-16 h-16 rounded-full bg-[#E8ECFB] dark:bg-[#1E294A] border border-[#DCE4F9] dark:border-[#2D3E70] flex items-center justify-center text-[#2F3A6B] dark:text-[#93A5F8] mb-4 shadow-sm">
+                <Lock className="w-8 h-8" />
+              </div>
+              <h2 className="text-lg font-semibold text-[#2E2E38] dark:text-[#EDEDF0] mb-1.5">Gizli Kasa Kilitli</h2>
+              <p className="text-xs text-[#6B6B76] dark:text-[#A1A1AA] mb-5 leading-relaxed">
+                Kasanız AES-256-GCM ile uçtan uca şifrelenmiştir. Notlarınızı görmek ve yeni şifreli not eklemek için kilidi açın.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => setIsVaultUnlockOpen(true)}
+                className="bg-[#2F3A6B] hover:bg-[#232c54] text-white px-5 gap-2"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Kasanın Kilidini Aç</span>
+              </Button>
+            </div>
+          ) : filteredNotes.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto p-6">
+              <div className="w-12 h-12 rounded-full bg-[#F4F2EE] dark:bg-[#282833] border border-[#E8E4DE] dark:border-[#3F3F4E] flex items-center justify-center text-[#6B6B76] dark:text-[#A1A1AA] mb-3">
                 {activeFilter === 'vault' ? (
-                  <Shield className="w-5 h-5 text-[#2F3A6B]" />
+                  <Shield className="w-5 h-5 text-[#2F3A6B] dark:text-[#93A5F8]" />
                 ) : (
                   <FilePlus className="w-5 h-5" />
                 )}
               </div>
-              <h2 className="text-base font-semibold text-[#2E2E38] mb-1">
+              <h2 className="text-base font-semibold text-[#2E2E38] dark:text-[#EDEDF0] mb-1">
                 {activeFilter === 'vault'
                   ? 'Kasa Boş'
                   : selectedTagId
                   ? 'Bu etikete ait not yok'
                   : 'Henüz not yok'}
               </h2>
-              <p className="text-xs text-[#6B6B76] mb-4">
+              <p className="text-xs text-[#6B6B76] dark:text-[#A1A1AA] mb-4">
                 {activeFilter === 'vault'
                   ? 'Uçtan uca şifreli ilk gizli notunuzu oluşturun.'
                   : 'Fikirlerinizi, kod parçalarını veya yapılacakları hemen yerel veritabanına kaydedin.'}
@@ -205,6 +278,23 @@ export function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      {/* Read-Only Shared Note Viewer */}
+      {sharedNoteData && (
+        <SharedNoteViewer
+          noteData={sharedNoteData}
+          onClose={() => {
+            window.location.hash = '';
+            setSharedNoteData(null);
+          }}
+        />
+      )}
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <ShortcutsHelpModal
+        isOpen={isShortcutsHelpOpen}
+        onClose={() => setIsShortcutsHelpOpen(false)}
       />
     </div>
   );

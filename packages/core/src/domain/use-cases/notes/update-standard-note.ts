@@ -21,6 +21,7 @@ export interface UpdateStandardNoteInput {
   /** The editor (Tiptap/Yjs) supplies the CRDT state and its text projection together. */
   readonly body?: { readonly content: CrdtState; readonly plainText: string };
   readonly tagIds?: readonly TagId[];
+  readonly color?: string;
 }
 
 export type UpdateStandardNoteError =
@@ -60,7 +61,7 @@ export class UpdateStandardNote
 
     const updated = updateStandardNote(
       loaded.value,
-      { title, body: input.body, tagIds: input.tagIds },
+      { title, body: input.body, tagIds: input.tagIds, color: input.color },
       this.clock.now(),
     );
     await this.notes.save(updated);

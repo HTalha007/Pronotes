@@ -1,29 +1,36 @@
 import React from 'react';
-import { Search, Plus, Cloud, RefreshCw, LogOut, User as UserIcon } from 'lucide-react';
+import { Search, Plus, Cloud, RefreshCw, LogOut, User as UserIcon, Sun, Moon, Keyboard } from 'lucide-react';
 import { Button, Input } from '@pronotes/ui';
 import { useNotesStore } from '../stores/notesStore';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 
 interface HeaderProps {
   onNewStandardNote: () => void;
   onNewVaultNote: () => void;
   onOpenAuthModal: () => void;
+  onOpenShortcutsHelp?: () => void;
+  searchInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onNewStandardNote,
   onNewVaultNote,
   onOpenAuthModal,
+  onOpenShortcutsHelp,
+  searchInputRef,
 }) => {
   const { searchQuery, setSearchQuery, activeFilter } = useNotesStore();
   const { user, isSyncing, syncNow, signOut } = useAuthStore();
+  const { resolvedTheme, toggleTheme } = useThemeStore();
 
   return (
-    <header className="h-14 border-b border-[#E8E4DE] bg-white px-6 flex items-center justify-between gap-4 flex-shrink-0">
+    <header className="h-14 border-b border-[#E8E4DE] dark:border-[#32323D] bg-white dark:bg-[#1E1E24] px-6 flex items-center justify-between gap-4 flex-shrink-0 transition-colors">
       {/* Search Input */}
       <div className="relative max-w-md w-full">
-        <Search className="w-4 h-4 text-[#9A9AA2] absolute left-3 top-3 pointer-events-none" />
+        <Search className="w-4 h-4 text-[#9A9AA2] dark:text-[#71717A] absolute left-3 top-2.5 pointer-events-none" />
         <Input
+          ref={searchInputRef}
           type="text"
           placeholder={
             activeFilter === 'vault'
@@ -32,12 +39,44 @@ export const Header: React.FC<HeaderProps> = ({
           }
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-          className="pl-9 bg-[#FAF8F5] border-[#E8E4DE] text-xs h-9"
+          className="pl-9 pr-8 text-xs h-9"
         />
+        <div className="absolute right-2.5 top-2.5 flex items-center pointer-events-none">
+          <kbd className="text-[10px] text-[#9A9AA2] dark:text-[#71717A] bg-white dark:bg-[#1E1E24] border border-[#E8E4DE] dark:border-[#3F3F4E] px-1.5 py-0.5 rounded font-mono shadow-2xs leading-none">
+            /
+          </kbd>
+        </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
+        {/* Keyboard Shortcuts Help */}
+        {onOpenShortcutsHelp && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onOpenShortcutsHelp}
+            className="h-8 w-8 p-0 text-[#6B6B76] dark:text-[#A1A1AA] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0]"
+            title="Klavye Kısayolları (?)"
+          >
+            <Keyboard className="w-4 h-4" />
+          </Button>
+        )}
+
+        {/* Theme Toggle Button */}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={toggleTheme}
+          className="h-8 w-8 p-0 text-[#6B6B76] dark:text-[#A1A1AA] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0]"
+          title={resolvedTheme === 'dark' ? 'Açık Mod (T)' : 'Karanlık Mod (T)'}
+        >
+          {resolvedTheme === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4" />
+          )}
+        </Button>
         {/* Sync & Auth Status Button */}
         {user ? (
           <div className="flex items-center gap-1.5 mr-2">

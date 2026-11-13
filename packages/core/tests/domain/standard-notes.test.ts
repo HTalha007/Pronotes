@@ -115,4 +115,21 @@ describe('standard note use cases', () => {
     const all = expectOk(await world.searchNotes.execute({ ownerId: OWNER, query: '  ' }));
     expect(all).toHaveLength(2);
   });
+
+  it('creates and updates note color', async () => {
+    const world = createWorld();
+    const note = expectOk(
+      await world.createStandardNote.execute({ ownerId: OWNER, title: 'Renkli Not', color: '#FEF9C3' }),
+    );
+    expect(note.color).toBe('#FEF9C3');
+
+    const updated = expectOk(
+      await world.updateStandardNote.execute({
+        ownerId: OWNER,
+        noteId: note.id,
+        color: '#DCFCE7',
+      }),
+    );
+    expect(updated.color).toBe('#DCFCE7');
+  });
 });

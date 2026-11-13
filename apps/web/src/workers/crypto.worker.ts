@@ -5,13 +5,14 @@ import {
   generateSalt,
   base64ToArrayBuffer,
   arrayBufferToBase64,
+  domain,
 } from '@pronotes/core';
 import type { EncryptedPayload } from '@pronotes/core';
 
 let activeVaultKey: CryptoKey | null = null;
 let activeSalt: Uint8Array | null = null;
 
-const VAULT_VERIFIER_PLAINTEXT = 'PRONOTES_VAULT_VERIFIER_V1';
+const VAULT_VERIFIER_PLAINTEXT = domain.VAULT_VERIFIER_PLAINTEXT;
 const VAULT_VERIFIER_AAD = 'pronotes_vault_verifier';
 
 self.onmessage = async (e: MessageEvent) => {

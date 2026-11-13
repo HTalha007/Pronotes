@@ -8,6 +8,7 @@ export interface StoredStandardNoteRecord {
   plainText: string;
   content: Uint8Array;
   tagIds: string[];
+  color?: string;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;

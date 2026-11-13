@@ -20,6 +20,7 @@ export interface StandardNote extends NoteBase {
   readonly plainText: string;
   readonly content: CrdtState;
   readonly tagIds: readonly TagId[];
+  readonly color?: string;
 }
 
 /**
@@ -52,6 +53,7 @@ export function createStandardNote(params: {
   readonly tagIds?: readonly TagId[];
   readonly content?: CrdtState;
   readonly plainText?: string;
+  readonly color?: string;
   readonly now: Date;
 }): StandardNote {
   return {
@@ -62,6 +64,7 @@ export function createStandardNote(params: {
     plainText: params.plainText ?? '',
     content: params.content ?? emptyCrdtState(),
     tagIds: params.tagIds ?? [],
+    color: params.color,
     createdAt: params.now,
     updatedAt: params.now,
     deletedAt: null,
@@ -72,6 +75,7 @@ export interface StandardNoteChanges {
   readonly title?: NoteTitle;
   readonly body?: { readonly content: CrdtState; readonly plainText: string };
   readonly tagIds?: readonly TagId[];
+  readonly color?: string;
 }
 
 export function updateStandardNote(
@@ -85,6 +89,7 @@ export function updateStandardNote(
     content: changes.body?.content ?? note.content,
     plainText: changes.body?.plainText ?? note.plainText,
     tagIds: changes.tagIds ?? note.tagIds,
+    color: changes.color !== undefined ? changes.color : note.color,
     updatedAt: now,
   };
 }

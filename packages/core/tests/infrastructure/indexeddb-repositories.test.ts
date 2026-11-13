@@ -164,6 +164,7 @@ describe('IndexedDB Local Database and Repositories (Integration)', () => {
         plainText: 'içerik metni',
         content: toCrdtState(new Uint8Array([1, 2, 3])),
         tagIds: [expectOk(parseTagId('tag-1'))],
+        color: '#FEF9C3',
         createdAt: new Date('2026-03-01T12:00:00Z'),
         updatedAt: new Date('2026-03-01T12:00:00Z'),
         deletedAt: null,
@@ -178,6 +179,7 @@ describe('IndexedDB Local Database and Repositories (Integration)', () => {
         expect(byId.title).toBe('Test Notu');
         expect(byId.plainText).toBe('içerik metni');
         expect(byId.tagIds).toEqual([expectOk(parseTagId('tag-1'))]);
+        expect(byId.color).toBe('#FEF9C3');
         expect([...byId.content]).toEqual([1, 2, 3]);
       }
 

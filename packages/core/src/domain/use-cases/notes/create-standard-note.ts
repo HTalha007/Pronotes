@@ -14,6 +14,7 @@ export interface CreateStandardNoteInput {
   readonly title?: string;
   readonly tagIds?: readonly TagId[];
   readonly body?: { readonly content: CrdtState; readonly plainText: string };
+  readonly color?: string;
 }
 
 /** FR-1/FR-6: "New note" creates an empty card instantly, works offline. */
@@ -43,6 +44,7 @@ export class CreateStandardNote
       tagIds: input.tagIds,
       content: input.body?.content,
       plainText: input.body?.plainText,
+      color: input.color,
       now: this.clock.now(),
     });
     await this.notes.save(note);

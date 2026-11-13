@@ -45,6 +45,7 @@ export function toStoredNoteRecord(note: Note): StoredNoteRecord {
       plainText: note.plainText,
       content: new Uint8Array(note.content),
       tagIds: [...note.tagIds],
+      color: note.color,
     };
     return standard;
   }
@@ -87,6 +88,7 @@ export function toDomainNote(record: StoredNoteRecord): Note {
       plainText: record.plainText,
       content: toCrdtState(new Uint8Array(record.content)),
       tagIds,
+      color: record.color,
       createdAt,
       updatedAt,
       deletedAt,

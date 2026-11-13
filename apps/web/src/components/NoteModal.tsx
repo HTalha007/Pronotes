@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, Shield, Check, Tag as TagIcon } from 'lucide-react';
+import { Trash2, Shield, Check, Tag as TagIcon, Palette, Share2 } from 'lucide-react';
 import * as Y from 'yjs';
 import {
   Dialog,
@@ -19,6 +19,9 @@ import { useNotesStore } from '../stores/notesStore';
 import { useVaultStore } from '../stores/vaultStore';
 import { useTagsStore } from '../stores/tagsStore';
 import { cryptoWorkerClient } from '../lib/crypto-worker-client';
+import { NOTE_COLORS, getNoteColor } from '../lib/note-colors';
+import { useThemeStore } from '../stores/themeStore';
+import { ShareExportModal } from './ShareExportModal';
 import { Editor } from './Editor';
 
 interface NoteModalProps {
@@ -38,21 +41,29 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   const [content, setContent] = useState('');
   const [doc, setDoc] = useState<Y.Doc | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<domain.TagId[]>([]);
+  const [color, setColor] = useState<string>('#FFFFFF');
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const coordinatorRef = useRef<CrdtPersistenceCoordinator | null>(null);
   const unregisterLifecycleRef = useRef<(() => void) | null>(null);
   const titleRef = useRef(title);
   const tagsRef = useRef(selectedTagIds);
+  const colorRef = useRef(color);
 
   titleRef.current = title;
   tagsRef.current = selectedTagIds;
+  colorRef.current = color;
 
-  const { createStandardNote, createVaultNote, updateNote, deleteNote } = useNotesStore();
+  const { createStandardNote, createVaultNote, updateNote, deleteNote, setDecryptedVaultItem } =
+    useNotesStore();
   const { isUnlocked } = useVaultStore();
   const { tags } = useTagsStore();
+  const { resolvedTheme } = useThemeStore();
+  const isDark = resolvedTheme === 'dark';
 
   const isVault = note ? note.kind === 'vault' : initialType === 'vault';
+  const modalColor = getNoteColor(color, isDark);
 
   useEffect(() => {
     // Cleanup previous active coordinator / doc
@@ -73,6 +84,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
         setTitle(note.title);
         setContent(note.plainText);
         setSelectedTagIds([...note.tagIds]);
+        setColor(note.color || '#FFFFFF');
 
         const { doc: newDoc } = YjsDocumentManager.createNoteDoc(note.id, note.content);
         activeDoc = newDoc;
@@ -88,12 +100,14 @@ export const NoteModal: React.FC<NoteModalProps> = ({
             plainText,
             content: domain.toCrdtState(snapshot),
             tagIds: tagsRef.current,
+            color: colorRef.current,
           });
         });
         coordinatorRef.current = coordinator;
         unregisterLifecycleRef.current = registerLifecycleFlush(coordinator);
       } else if (note.kind === 'vault') {
         setSelectedTagIds([]);
+        setColor('#FFFFFF');
         if (isUnlocked) {
           setIsDecrypting(true);
           const ivBase64 = btoa(String.fromCharCode(...note.encryptedPayload.iv));
@@ -143,6 +157,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
       setTitle('');
       setContent('');
       setSelectedTagIds([]);
+      setColor('#FFFFFF');
 
       const tempId = (domain.parseNoteId(crypto.randomUUID()).ok
         ? (domain.parseNoteId(crypto.randomUUID()) as { ok: true; value: domain.NoteId }).value
@@ -191,6 +206,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
           plainText: currentText,
           content: domain.toCrdtState(snapshot),
           tagIds: selectedTagIds,
+          color,
         });
       } else if (note.kind === 'vault') {
         const plainJson = JSON.stringify({
@@ -218,12 +234,13 @@ export const NoteModal: React.FC<NoteModalProps> = ({
           encryptedPayload: blob,
           updatedAt: new Date(),
         });
+        setDecryptedVaultItem(note.id, { title, plainText: currentText });
       }
     } else {
       if (isVault) {
         await createVaultNote(title, currentText, snapshot);
       } else {
-        await createStandardNote(title, currentText, selectedTagIds, snapshot);
+        await createStandardNote(title, currentText, selectedTagIds, snapshot, color);
       }
     }
     onClose();
@@ -237,9 +254,13 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && handleSave()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-6">
-        <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-[#E8E4DE]">
+    <>
+      <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && handleSave()}>
+        <DialogContent
+        style={{ backgroundColor: isVault ? undefined : modalColor.bg }}
+        className="sm:max-w-2xl max-h-[90vh] flex flex-col p-6 transition-colors duration-200"
+      >
+        <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-[#E8E4DE] dark:border-[#3F3F4E]">
           <div className="flex items-center gap-2">
             {isVault ? (
               <Badge variant="vault" className="gap-1.5">
@@ -247,16 +268,25 @@ export const NoteModal: React.FC<NoteModalProps> = ({
                 Şifreli Kasa Notu
               </Badge>
             ) : (
-              <span className="text-xs text-[#6B6B76]">Standart Not</span>
+              <span className="text-xs text-[#6B6B76] dark:text-[#A1A1AA]">Standart Not</span>
             )}
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsShareModalOpen(true)}
+              className="text-[#6B6B76] dark:text-[#A1A1AA] hover:text-[#2E2E38] dark:hover:text-[#EDEDF0] hover:bg-[#F4F2EE] dark:hover:bg-[#282833]"
+              title="Paylaş veya Dışa Aktar"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
             {note && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleDelete}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
                 title="Notu yerel veritabanından sil"
               >
                 <Trash2 className="w-4 h-4" />
@@ -266,7 +296,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
         </DialogHeader>
 
         {isDecrypting ? (
-          <div className="py-12 text-center text-sm text-[#6B6B76]">
+          <div className="py-12 text-center text-sm text-[#6B6B76] dark:text-[#A1A1AA]">
             Kasa notu deşifre ediliyor...
           </div>
         ) : (
@@ -275,13 +305,13 @@ export const NoteModal: React.FC<NoteModalProps> = ({
               placeholder="Başlık..."
               value={title}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-              className="text-lg font-semibold bg-transparent border-0 px-0 focus:ring-0 placeholder:text-[#9A9AA2]"
+              className="text-lg font-semibold bg-transparent border-0 px-0 focus:ring-0 placeholder:text-[#9A9AA2] dark:placeholder:text-[#71717A] text-[#2E2E38] dark:text-[#EDEDF0]"
             />
 
             {/* Tag selector chips for standard notes */}
             {!isVault && tags.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <div className="flex items-center gap-1 text-[11px] text-[#6B6B76] mr-1">
+                <div className="flex items-center gap-1 text-[11px] text-[#6B6B76] dark:text-[#A1A1AA] mr-1">
                   <TagIcon className="w-3 h-3" />
                   <span>Etiketler:</span>
                 </div>
@@ -294,18 +324,51 @@ export const NoteModal: React.FC<NoteModalProps> = ({
                       onClick={() => toggleTag(tag.id)}
                       className={`text-xs px-2.5 py-1 rounded-full border transition-all flex items-center gap-1.5 ${
                         isAttached
-                          ? 'bg-[#2E2E38] text-white border-[#2E2E38] shadow-sm'
-                          : 'bg-[#FAF8F5] text-[#6B6B76] border-[#E8E4DE] hover:border-[#D5D0C8]'
+                          ? 'bg-[#2E2E38] dark:bg-[#EDEDF0] text-white dark:text-[#18181B] border-[#2E2E38] dark:border-[#EDEDF0] shadow-sm'
+                          : 'bg-white/80 dark:bg-[#282833]/80 text-[#6B6B76] dark:text-[#A1A1AA] border-[#E8E4DE] dark:border-[#3F3F4E] hover:border-[#D5D0C8]'
                       }`}
                     >
                       <span
                         className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: isAttached ? '#FFFFFF' : tag.color }}
+                        style={{ backgroundColor: isAttached ? (isDark ? '#18181B' : '#FFFFFF') : tag.color }}
                       />
                       <span>{tag.name}</span>
                     </button>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Color palette selector for standard notes */}
+            {!isVault && (
+              <div className="flex items-center gap-2 pt-1 pb-1">
+                <div className="flex items-center gap-1 text-[11px] text-[#6B6B76] dark:text-[#A1A1AA] mr-1">
+                  <Palette className="w-3 h-3" />
+                  <span>Renk:</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {NOTE_COLORS.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setColor(c.bg)}
+                      className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${
+                        color.toLowerCase() === c.bg.toLowerCase()
+                          ? 'ring-2 ring-[#2E2E38] dark:ring-[#EDEDF0] ring-offset-1 scale-110 shadow-xs'
+                          : 'hover:scale-105'
+                      }`}
+                      style={{
+                        backgroundColor: isDark ? c.darkBg : c.bg,
+                        borderColor: isDark ? c.darkBorder : c.border,
+                      }}
+                      title={c.name}
+                    >
+                      {color.toLowerCase() === c.bg.toLowerCase() && (
+                        <Check className="w-3 h-3 text-[#2E2E38] dark:text-[#EDEDF0]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -318,8 +381,8 @@ export const NoteModal: React.FC<NoteModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-4 border-t border-[#E8E4DE]">
-          <span className="text-xs text-[#9A9AA2]">CRDT ile yerel IndexedDB'ye kaydedilir</span>
+        <div className="flex items-center justify-between pt-4 border-t border-[#E8E4DE] dark:border-[#3F3F4E]">
+          <span className="text-xs text-[#9A9AA2] dark:text-[#71717A]">CRDT ile yerel IndexedDB'ye kaydedilir</span>
           <Button onClick={handleSave} className="gap-1.5">
             <Check className="w-4 h-4" />
             Bitti
@@ -327,5 +390,15 @@ export const NoteModal: React.FC<NoteModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    <ShareExportModal
+      isOpen={isShareModalOpen}
+      onClose={() => setIsShareModalOpen(false)}
+      title={title}
+      content={doc ? YjsDocumentManager.extractPlainText(doc, 'content') : content}
+      tagNames={tags.filter((t) => selectedTagIds.includes(t.id)).map((t) => t.name)}
+      isVault={isVault}
+    />
+  </>
   );
 };

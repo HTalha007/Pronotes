@@ -26,7 +26,8 @@ export const VaultUnlockModal: React.FC<VaultUnlockModalProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const { isInitialized, setupVault, unlockVault, isVerifying, error, clearError } = useVaultStore();
+  const { isInitialized, setupVault, unlockVault, resetVault, isVerifying, error, clearError } =
+    useVaultStore();
 
   useEffect(() => {
     if (!isOpen) {
@@ -90,9 +91,24 @@ export const VaultUnlockModal: React.FC<VaultUnlockModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {activeError && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-card">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{activeError}</span>
+            <div className="flex flex-col gap-1.5 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-sm rounded-card">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{activeError}</span>
+              </div>
+              {isInitialized && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetVault();
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                  className="text-xs text-red-600 dark:text-red-400 hover:underline text-left mt-0.5 cursor-pointer font-medium"
+                >
+                  Şifreyi unuttuysanız: Kasayı Sıfırla ve Yeni Şifre Belirle
+                </button>
+              )}
             </div>
           )}
 

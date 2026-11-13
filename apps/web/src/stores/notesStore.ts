@@ -12,12 +12,14 @@ interface NotesState {
   searchQuery: string;
   selectedNote: domain.Note | null;
   isLoading: boolean;
+  decryptedVaultCache: Record<string, { title: string; plainText: string }>;
   loadNotes: () => Promise<void>;
   createStandardNote: (
     title?: string,
     content?: string,
     tagIds?: readonly domain.TagId[],
     crdtSnapshot?: Uint8Array,
+    color?: string,
   ) => Promise<domain.StandardNote | null>;
   createVaultNote: (
     title: string,
@@ -29,6 +31,8 @@ interface NotesState {
   setActiveFilter: (filter: 'all' | 'vault') => void;
   setSearchQuery: (query: string) => void;
   setSelectedNote: (note: domain.Note | null) => void;
+  setDecryptedVaultItem: (noteId: string, item: { title: string; plainText: string }) => void;
+  clearVaultCache: () => void;
 }
 
 export const useNotesStore = create<NotesState>((set) => ({
@@ -37,6 +41,7 @@ export const useNotesStore = create<NotesState>((set) => ({
   searchQuery: '',
   selectedNote: null,
   isLoading: true,
+  decryptedVaultCache: {},
 
   loadNotes: async () => {
     await compositionRoot.init();
@@ -56,7 +61,13 @@ export const useNotesStore = create<NotesState>((set) => ({
     });
   },
 
-  createStandardNote: async (title = '', content = '', tagIds = [], crdtSnapshot?: Uint8Array) => {
+  createStandardNote: async (
+    title = '',
+    content = '',
+    tagIds = [],
+    crdtSnapshot?: Uint8Array,
+    color?: string,
+  ) => {
     await compositionRoot.init();
 
     let initialBody: { content: domain.CrdtState; plainText: string } | undefined = undefined;
@@ -82,6 +93,7 @@ export const useNotesStore = create<NotesState>((set) => ({
       title,
       tagIds,
       body: initialBody,
+      color,
     });
 
     if (!createdRes.ok) {
@@ -140,6 +152,10 @@ export const useNotesStore = create<NotesState>((set) => ({
     set((state) => ({
       notes: [newVaultNote, ...state.notes],
       selectedNote: newVaultNote,
+      decryptedVaultCache: {
+        ...state.decryptedVaultCache,
+        [newNoteId]: { title, plainText: content },
+      },
     }));
 
     return newVaultNote;
@@ -157,6 +173,7 @@ export const useNotesStore = create<NotesState>((set) => ({
           content: updatedNote.content,
           plainText: updatedNote.plainText,
         },
+        color: updatedNote.color,
       });
       if (res.ok) {
         set((state) => ({
@@ -185,13 +202,27 @@ export const useNotesStore = create<NotesState>((set) => ({
       });
     }
 
-    set((state) => ({
-      notes: state.notes.filter((n) => n.id !== id),
-      selectedNote: state.selectedNote?.id === id ? null : state.selectedNote,
-    }));
+    set((state) => {
+      const { [id]: _, ...restCache } = state.decryptedVaultCache;
+      return {
+        notes: state.notes.filter((n) => n.id !== id),
+        selectedNote: state.selectedNote?.id === id ? null : state.selectedNote,
+        decryptedVaultCache: restCache,
+      };
+    });
   },
 
   setActiveFilter: (activeFilter) => set({ activeFilter }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   setSelectedNote: (selectedNote) => set({ selectedNote }),
+
+  setDecryptedVaultItem: (noteId: string, item: { title: string; plainText: string }) =>
+    set((state) => ({
+      decryptedVaultCache: {
+        ...state.decryptedVaultCache,
+        [noteId]: item,
+      },
+    })),
+
+  clearVaultCache: () => set({ decryptedVaultCache: {} }),
 }));
