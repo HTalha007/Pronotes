@@ -180,7 +180,7 @@ export class FakeVaultCipher implements VaultCipher {
     return this.key !== null;
   }
 
-  async encrypt(plaintext: Uint8Array): Promise<Result<EncryptedBlob, VaultLockedError>> {
+  async encrypt(plaintext: Uint8Array, aad?: Uint8Array): Promise<Result<EncryptedBlob, VaultLockedError>> {
     if (this.key === null) {
       return err(new VaultLockedError());
     }
@@ -188,18 +188,19 @@ export class FakeVaultCipher implements VaultCipher {
     plaintext.forEach((byte, i) => {
       ciphertext[i] = byte ^ (this.key?.[i % (this.key?.length ?? 1)] ?? 0);
     });
-    ciphertext.set(this.tag(this.key), plaintext.length);
-    return ok({ version: 1, iv: new Uint8Array(12), ciphertext });
+    ciphertext.set(this.tag(this.key, aad), plaintext.length);
+    return ok({ version: 1, alg: 'AES-GCM', iv: new Uint8Array(12), ciphertext });
   }
 
   async decrypt(
     blob: EncryptedBlob,
+    aad?: Uint8Array,
   ): Promise<Result<Uint8Array, VaultLockedError | DecryptionFailedError>> {
     if (this.key === null) {
       return err(new VaultLockedError());
     }
     const dataLength = blob.ciphertext.length - TAG_LENGTH;
-    const expectedTag = this.tag(this.key);
+    const expectedTag = this.tag(this.key, aad);
     const actualTag = blob.ciphertext.slice(dataLength);
     if (dataLength < 0 || expectedTag.some((byte, i) => byte !== actualTag[i])) {
       return err(new DecryptionFailedError());
@@ -211,8 +212,14 @@ export class FakeVaultCipher implements VaultCipher {
     return ok(plaintext);
   }
 
-  private tag(key: Uint8Array): Uint8Array {
-    return Uint8Array.from({ length: TAG_LENGTH }, (_, i) => (key[i % key.length] ?? 0) ^ 0x5a);
+  private tag(key: Uint8Array, aad?: Uint8Array): Uint8Array {
+    let aadFold = 0;
+    if (aad && aad.length > 0) {
+      for (let i = 0; i < aad.length; i++) {
+        aadFold = (aadFold * 31 + aad[i]!) & 0xff;
+      }
+    }
+    return Uint8Array.from({ length: TAG_LENGTH }, (_, i) => (key[i % key.length] ?? 0) ^ 0x5a ^ aadFold);
   }
 }
 

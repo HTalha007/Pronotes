@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { domain } from '@pronotes/core';
+import * as Y from 'yjs';
+import { domain, YjsDocumentManager } from '@pronotes/core';
 import { compositionRoot, LOCAL_USER_ID } from '../composition-root';
 import { cryptoWorkerClient } from '../lib/crypto-worker-client';
 
@@ -16,8 +17,13 @@ interface NotesState {
     title?: string,
     content?: string,
     tagIds?: readonly domain.TagId[],
+    crdtSnapshot?: Uint8Array,
   ) => Promise<domain.StandardNote | null>;
-  createVaultNote: (title: string, content: string) => Promise<domain.VaultNote | null>;
+  createVaultNote: (
+    title: string,
+    content: string,
+    crdtSnapshot?: Uint8Array,
+  ) => Promise<domain.VaultNote | null>;
   updateNote: (updatedNote: domain.Note) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
   setActiveFilter: (filter: 'all' | 'vault') => void;
@@ -50,33 +56,39 @@ export const useNotesStore = create<NotesState>((set) => ({
     });
   },
 
-  createStandardNote: async (title = '', content = '', tagIds = []) => {
+  createStandardNote: async (title = '', content = '', tagIds = [], crdtSnapshot?: Uint8Array) => {
     await compositionRoot.init();
+
+    let initialBody: { content: domain.CrdtState; plainText: string } | undefined = undefined;
+    if (crdtSnapshot && crdtSnapshot.length > 0) {
+      initialBody = {
+        content: toCrdtState(crdtSnapshot),
+        plainText: content,
+      };
+    } else if (content.trim().length > 0) {
+      const { doc } = YjsDocumentManager.createNoteDoc('init' as any);
+      const p = new Y.XmlElement('paragraph');
+      p.insert(0, [new Y.XmlText(content)]);
+      doc.getXmlFragment('content').insert(0, [p]);
+      initialBody = {
+        content: toCrdtState(YjsDocumentManager.createSnapshot(doc)),
+        plainText: content,
+      };
+      doc.destroy();
+    }
+
     const createdRes = await compositionRoot.createStandardNote.execute({
       ownerId: LOCAL_USER_ID,
       title,
       tagIds,
+      body: initialBody,
     });
 
     if (!createdRes.ok) {
       return null;
     }
 
-    let note = createdRes.value;
-
-    if (content.trim().length > 0) {
-      const updatedRes = await compositionRoot.updateStandardNote.execute({
-        ownerId: LOCAL_USER_ID,
-        noteId: note.id,
-        body: {
-          content: toCrdtState(new TextEncoder().encode(content)),
-          plainText: content,
-        },
-      });
-      if (updatedRes.ok) {
-        note = updatedRes.value;
-      }
-    }
+    const note = createdRes.value;
 
     set((state) => ({
       notes: [note, ...state.notes],
@@ -86,13 +98,22 @@ export const useNotesStore = create<NotesState>((set) => ({
     return note;
   },
 
-  createVaultNote: async (title: string, content: string) => {
+  createVaultNote: async (title: string, content: string, crdtSnapshot?: Uint8Array) => {
     await compositionRoot.init();
-    const plainJson = JSON.stringify({ title, content });
-    const encryptedData = await cryptoWorkerClient.encryptVaultItem(plainJson);
+    const newNoteId = parseNoteId(crypto.randomUUID()).ok
+      ? (parseNoteId(crypto.randomUUID()) as { ok: true; value: domain.NoteId }).value
+      : ('vault-' + Date.now() as domain.NoteId);
+
+    const plainJson = JSON.stringify({
+      title,
+      content,
+      crdtState: crdtSnapshot ? Array.from(crdtSnapshot) : [],
+    });
+    const encryptedData = await cryptoWorkerClient.encryptVaultItem(plainJson, newNoteId);
 
     const blob: domain.EncryptedBlob = {
       version: 1,
+      alg: 'AES-GCM',
       iv: new Uint8Array(
         atob(encryptedData.iv)
           .split('')
@@ -106,9 +127,7 @@ export const useNotesStore = create<NotesState>((set) => ({
     };
 
     const newVaultNote = createVaultNote({
-      id: parseNoteId(crypto.randomUUID()).ok
-        ? (parseNoteId(crypto.randomUUID()) as { ok: true; value: domain.NoteId }).value
-        : ('vault-' + Date.now() as domain.NoteId),
+      id: newNoteId,
       ownerId: LOCAL_USER_ID,
       encryptedPayload: blob,
       now: new Date(),

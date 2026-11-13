@@ -42,8 +42,20 @@ class CryptoWorkerClient {
     });
   }
 
-  public async unlockVault(password: string, saltBase64?: string): Promise<{ saltBase64: string }> {
-    return this.sendRequest<{ saltBase64: string }>('unlockVault', { password, saltBase64 });
+  public async setupVault(password: string): Promise<{ saltBase64: string; verifierPayload: EncryptedPayload }> {
+    return this.sendRequest<{ saltBase64: string; verifierPayload: EncryptedPayload }>('setupVault', { password });
+  }
+
+  public async unlockVault(
+    password: string,
+    saltBase64?: string,
+    verifierPayload?: EncryptedPayload,
+  ): Promise<{ saltBase64: string; verifierPayload?: EncryptedPayload }> {
+    return this.sendRequest<{ saltBase64: string; verifierPayload?: EncryptedPayload }>('unlockVault', {
+      password,
+      saltBase64,
+      verifierPayload,
+    });
   }
 
   public async lockVault(): Promise<void> {
@@ -55,12 +67,12 @@ class CryptoWorkerClient {
     return res.unlocked;
   }
 
-  public async encryptVaultItem(plainText: string): Promise<EncryptedPayload> {
-    return this.sendRequest<EncryptedPayload>('encryptVaultItem', { plainText });
+  public async encryptVaultItem(plainText: string, aad?: string): Promise<EncryptedPayload> {
+    return this.sendRequest<EncryptedPayload>('encryptVaultItem', { plainText, aad });
   }
 
-  public async decryptVaultItem(encryptedPayload: EncryptedPayload): Promise<string> {
-    return this.sendRequest<string>('decryptVaultItem', { encryptedPayload });
+  public async decryptVaultItem(encryptedPayload: EncryptedPayload, aad?: string): Promise<string> {
+    return this.sendRequest<string>('decryptVaultItem', { encryptedPayload, aad });
   }
 }
 

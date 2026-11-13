@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   createMasterPassword,
+  StandardNoteCrdtPersistenceProvider,
   toCrdtState,
   utf8Decode,
+  VaultNoteCrdtPersistenceProvider,
   VAULT_VERIFIER_PLAINTEXT,
 } from '../../src/domain';
 import { expectErr, expectOk, FakeVaultCipher } from '../support/fakes';
@@ -228,5 +230,124 @@ describe('vault notes', () => {
 
     expectOk(await world.deleteNote.execute({ ownerId: OWNER, noteId: note.id }));
     expect(world.notes.store.get(note.id)?.deletedAt).not.toBeNull();
+  });
+
+  describe('NoteCrdtPersistenceProvider implementations', () => {
+    it('StandardNoteCrdtPersistenceProvider loads and saves snapshot directly', async () => {
+      const world = createWorld();
+      const note = expectOk(
+        await world.createStandardNote.execute({ ownerId: OWNER, title: 'Standart Not' }),
+      );
+
+      const provider = new StandardNoteCrdtPersistenceProvider(world.notes, world.clock);
+
+      // Save a new snapshot
+      const snapshot = new Uint8Array([10, 20, 30]);
+      const saveRes = await provider.saveSnapshot({
+        ownerId: OWNER,
+        noteId: note.id,
+        snapshot,
+        plainText: 'Güncel metin',
+        title: 'Güncel Başlık',
+      });
+      expectOk(saveRes);
+
+      // Verify loaded initial state
+      const loadRes = expectOk(await provider.loadInitialState(OWNER, note.id));
+      expect(loadRes.snapshot).toEqual(snapshot);
+      expect(loadRes.plainText).toBe('Güncel metin');
+      expect(loadRes.title).toBe('Güncel Başlık');
+    });
+
+    it('VaultNoteCrdtPersistenceProvider rejects operations when vault is locked', async () => {
+      const world = createWorld(); // Locked by default
+      const provider = new VaultNoteCrdtPersistenceProvider(world.notes, world.cipher, world.clock);
+
+      const loadErr = expectErr(await provider.loadInitialState(OWNER, 'any-id' as any));
+      expect(loadErr.code).toBe('VAULT_LOCKED');
+
+      const saveErr = expectErr(
+        await provider.saveSnapshot({
+          ownerId: OWNER,
+          noteId: 'any-id' as any,
+          snapshot: new Uint8Array([1, 2, 3]),
+          plainText: 'text',
+        }),
+      );
+      expect(saveErr.code).toBe('VAULT_LOCKED');
+    });
+
+    it('VaultNoteCrdtPersistenceProvider saves encrypted snapshot without saving plainText to disk', async () => {
+      const world = await worldWithUnlockedVault();
+      const vaultNote = expectOk(
+        await world.createVaultNote.execute({
+          ownerId: OWNER,
+          title: 'Kasa Notu',
+          plainText: 'Gizli Bilgi',
+          crdtState: crdt,
+        }),
+      );
+
+      const provider = new VaultNoteCrdtPersistenceProvider(world.notes, world.cipher, world.clock);
+
+      // Save new encrypted snapshot
+      const newSnapshot = new Uint8Array([55, 66, 77]);
+      const saveRes = await provider.saveSnapshot({
+        ownerId: OWNER,
+        noteId: vaultNote.id,
+        snapshot: newSnapshot,
+        plainText: 'Gizli Parola: 1234',
+        title: 'Güncel Kasa Başlığı',
+      });
+      expectOk(saveRes);
+
+      // Verify that plainText is NOT stored anywhere unencrypted on the stored note object
+      const stored = world.notes.store.get(vaultNote.id);
+      expect(stored).toBeDefined();
+      expect((stored as any).plainText).toBeUndefined();
+      expect((stored as any).title).toBeUndefined();
+
+      // Verify loadInitialState can decrypt it when unlocked
+      const loadRes = expectOk(await provider.loadInitialState(OWNER, vaultNote.id));
+      expect(loadRes.snapshot).toEqual(newSnapshot);
+      expect(loadRes.plainText).toBe('Gizli Parola: 1234');
+      expect(loadRes.title).toBe('Güncel Kasa Başlığı');
+    });
+
+    it('rejects decryption when AAD noteId does not match (payload transplantation defense)', async () => {
+      const world = await worldWithUnlockedVault();
+      const note1 = expectOk(
+        await world.createVaultNote.execute({
+          ownerId: OWNER,
+          title: 'Note 1',
+          plainText: 'Secret 1',
+          crdtState: crdt,
+        }),
+      );
+      const note2 = expectOk(
+        await world.createVaultNote.execute({
+          ownerId: OWNER,
+          title: 'Note 2',
+          plainText: 'Secret 2',
+          crdtState: crdt,
+        }),
+      );
+
+      // Transplant encrypted payload of note1 into note2
+      const stored1 = world.notes.store.get(note1.id);
+      const stored2 = world.notes.store.get(note2.id);
+      if (!stored1 || !stored2 || stored1.kind !== 'vault' || stored2.kind !== 'vault') {
+        throw new Error('expected vault notes in store');
+      }
+      world.notes.store.set(note2.id, {
+        ...stored2,
+        encryptedPayload: stored1.encryptedPayload,
+      });
+
+      const provider = new VaultNoteCrdtPersistenceProvider(world.notes, world.cipher, world.clock);
+      // Loading note2 with note1's transplanted payload must fail decryption because AAD (noteId) does not match
+      const err = expectErr(await provider.loadInitialState(OWNER, note2.id));
+      expect(err.code).toBe('DECRYPTION_FAILED');
+    });
   });
 });

@@ -10,6 +10,7 @@ export const AES_GCM_TAG_LENGTH = 16;
  */
 export interface EncryptedBlob {
   readonly version: 1;
+  readonly alg?: 'AES-GCM';
   readonly iv: Uint8Array;
   readonly ciphertext: Uint8Array;
 }
@@ -17,6 +18,7 @@ export interface EncryptedBlob {
 export function createEncryptedBlob(
   iv: Uint8Array,
   ciphertext: Uint8Array,
+  alg: 'AES-GCM' = 'AES-GCM',
 ): Result<EncryptedBlob, ValidationError> {
   if (iv.length !== AES_GCM_IV_LENGTH) {
     return err(new ValidationError('iv', `IV must be ${AES_GCM_IV_LENGTH} bytes.`));
@@ -24,5 +26,5 @@ export function createEncryptedBlob(
   if (ciphertext.length < AES_GCM_TAG_LENGTH) {
     return err(new ValidationError('ciphertext', 'Ciphertext is too short to hold a GCM tag.'));
   }
-  return ok({ version: 1, iv, ciphertext });
+  return ok({ version: 1, alg, iv, ciphertext });
 }

@@ -11,25 +11,72 @@ import type { EncryptedPayload } from '@pronotes/core';
 let activeVaultKey: CryptoKey | null = null;
 let activeSalt: Uint8Array | null = null;
 
+const VAULT_VERIFIER_PLAINTEXT = 'PRONOTES_VAULT_VERIFIER_V1';
+const VAULT_VERIFIER_AAD = 'pronotes_vault_verifier';
+
 self.onmessage = async (e: MessageEvent) => {
   const { id, action, payload } = e.data;
 
   try {
     switch (action) {
-      case 'unlockVault': {
-        const { password, saltBase64 } = payload;
-        const salt = saltBase64
-          ? new Uint8Array(base64ToArrayBuffer(saltBase64))
-          : generateSalt();
+      case 'setupVault': {
+        const { password } = payload;
+        if (!password || typeof password !== 'string' || password.length < 8) {
+          throw new Error('Master Password en az 8 karakter olmalıdır.');
+        }
 
+        const salt = generateSalt();
         const key = await deriveKeyFromPassword(password, salt);
+        const verifierPayload = await encryptData(VAULT_VERIFIER_PLAINTEXT, key, salt, VAULT_VERIFIER_AAD);
+
         activeVaultKey = key;
         activeSalt = salt;
 
         self.postMessage({
           id,
           success: true,
-          result: { saltBase64: arrayBufferToBase64(salt) },
+          result: {
+            saltBase64: arrayBufferToBase64(salt),
+            verifierPayload,
+          },
+        });
+        break;
+      }
+
+      case 'unlockVault': {
+        const { password, saltBase64, verifierPayload } = payload;
+        if (!password || typeof password !== 'string') {
+          throw new Error('Lütfen şifrenizi girin.');
+        }
+
+        const salt = saltBase64
+          ? new Uint8Array(base64ToArrayBuffer(saltBase64))
+          : generateSalt();
+
+        const key = await deriveKeyFromPassword(password, salt);
+
+        let createdVerifier: EncryptedPayload | undefined;
+        if (verifierPayload) {
+          // Verify master password against cryptographic verifier
+          const decrypted = await decryptData(verifierPayload, key, VAULT_VERIFIER_AAD);
+          if (decrypted !== VAULT_VERIFIER_PLAINTEXT) {
+            throw new Error('Şifre Yanlış.');
+          }
+        } else {
+          // Auto-generate verifier for existing legacy vault
+          createdVerifier = await encryptData(VAULT_VERIFIER_PLAINTEXT, key, salt, VAULT_VERIFIER_AAD);
+        }
+
+        activeVaultKey = key;
+        activeSalt = salt;
+
+        self.postMessage({
+          id,
+          success: true,
+          result: {
+            saltBase64: arrayBufferToBase64(salt),
+            verifierPayload: createdVerifier,
+          },
         });
         break;
       }
@@ -54,8 +101,8 @@ self.onmessage = async (e: MessageEvent) => {
         if (!activeVaultKey || !activeSalt) {
           throw new Error('Kasa kilitli. Lütfen önce ana şifrenizi girin.');
         }
-        const { plainText } = payload;
-        const encrypted = await encryptData(plainText, activeVaultKey, activeSalt);
+        const { plainText, aad } = payload;
+        const encrypted = await encryptData(plainText, activeVaultKey, activeSalt, aad);
         self.postMessage({ id, success: true, result: encrypted });
         break;
       }
@@ -64,8 +111,8 @@ self.onmessage = async (e: MessageEvent) => {
         if (!activeVaultKey) {
           throw new Error('Kasa kilitli. Lütfen önce ana şifrenizi girin.');
         }
-        const { encryptedPayload } = payload as { encryptedPayload: EncryptedPayload };
-        const decrypted = await decryptData(encryptedPayload, activeVaultKey);
+        const { encryptedPayload, aad } = payload as { encryptedPayload: EncryptedPayload; aad?: string };
+        const decrypted = await decryptData(encryptedPayload, activeVaultKey, aad);
         self.postMessage({ id, success: true, result: decrypted });
         break;
       }
@@ -77,7 +124,7 @@ self.onmessage = async (e: MessageEvent) => {
     self.postMessage({
       id,
       success: false,
-      error: error.message || 'Bilinmeyen bir hata oluştu.',
+      error: error.message || 'Şifre Yanlış.',
     });
   }
 };

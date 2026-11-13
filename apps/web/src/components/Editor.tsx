@@ -25,7 +25,7 @@ export const Editor: React.FC<EditorProps> = ({
     {
       extensions: [
         StarterKit.configure({
-          history: false, // REQUIRED when using Collaboration to avoid conflicts with Yjs history
+          history: doc ? false : undefined, // Disable PM history when Collaboration/Yjs provides UndoManager
           codeBlock: false,
         }),
         CodeBlock.configure({

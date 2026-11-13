@@ -4,6 +4,7 @@ export * from './crypto/crypto-engine';
 export * from './storage/indexeddb';
 export * from './crdt/crdt-resolver';
 export * from './crdt/yjs-document-manager';
+export * from './crdt/crdt-persistence-coordinator';
 export * from './sync/sync-manager';
 
 // Clean Architecture domain layer (entities, value objects, ports, use cases).

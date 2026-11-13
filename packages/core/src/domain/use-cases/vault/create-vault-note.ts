@@ -3,6 +3,7 @@ import type { ValidationError, VaultLockedError } from '../../errors/domain-erro
 import type { NoteRepository } from '../../repositories/note-repository';
 import type { Clock, IdGenerator } from '../../services/platform-services';
 import type { VaultCipher } from '../../services/vault-cipher';
+import { utf8Encode } from '../../shared/bytes';
 import { ok, type Result } from '../../shared/result';
 import type { CrdtState } from '../../value-objects/crdt-state';
 import type { UserId } from '../../value-objects/ids';
@@ -36,19 +37,21 @@ export class CreateVaultNote
     if (!title.ok) {
       return title;
     }
+    const id = this.ids.newNoteId();
     const encrypted = await this.cipher.encrypt(
       encodeVaultNotePayload({
         title: title.value,
         plainText: input.plainText,
         crdtState: input.crdtState,
       }),
+      utf8Encode(id),
     );
     if (!encrypted.ok) {
       return encrypted;
     }
 
     const note = createVaultNote({
-      id: this.ids.newNoteId(),
+      id,
       ownerId: input.ownerId,
       encryptedPayload: encrypted.value,
       now: this.clock.now(),

@@ -138,8 +138,45 @@ class CompositionRoot {
           await cryptoWorkerClient.lockVault();
         },
         isUnlocked: async () => cryptoWorkerClient.isUnlocked(),
-        encrypt: async () => domain.err(new domain.VaultLockedError()),
-        decrypt: async () => domain.err(new domain.VaultLockedError()),
+        encrypt: async (plaintext: Uint8Array, aad?: Uint8Array) => {
+          try {
+            const isUnlocked = await cryptoWorkerClient.isUnlocked();
+            if (!isUnlocked) return domain.err(new domain.VaultLockedError());
+            const text = domain.utf8Decode(plaintext);
+            const aadStr = aad ? domain.utf8Decode(aad) : undefined;
+            const res = await cryptoWorkerClient.encryptVaultItem(text, aadStr);
+            const blob: domain.EncryptedBlob = {
+              version: 1,
+              alg: 'AES-GCM',
+              iv: new Uint8Array(atob(res.iv).split('').map((c) => c.charCodeAt(0))),
+              ciphertext: new Uint8Array(atob(res.ciphertext).split('').map((c) => c.charCodeAt(0))),
+            };
+            return domain.ok(blob);
+          } catch {
+            return domain.err(new domain.VaultLockedError());
+          }
+        },
+        decrypt: async (blob: domain.EncryptedBlob, aad?: Uint8Array) => {
+          try {
+            const isUnlocked = await cryptoWorkerClient.isUnlocked();
+            if (!isUnlocked) return domain.err(new domain.VaultLockedError());
+            const ivBase64 = btoa(String.fromCharCode(...blob.iv));
+            const cipherBase64 = btoa(String.fromCharCode(...blob.ciphertext));
+            const aadStr = aad ? domain.utf8Decode(aad) : undefined;
+            const decryptedStr = await cryptoWorkerClient.decryptVaultItem(
+              {
+                version: 1,
+                iv: ivBase64,
+                ciphertext: cipherBase64,
+                salt: '',
+              },
+              aadStr,
+            );
+            return domain.ok(domain.utf8Encode(decryptedStr));
+          } catch {
+            return domain.err(new domain.DecryptionFailedError());
+          }
+        },
       };
 
       this.syncGateway = new FirestoreSyncGateway({

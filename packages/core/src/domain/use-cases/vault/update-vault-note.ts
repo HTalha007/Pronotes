@@ -9,6 +9,7 @@ import {
 import type { NoteRepository } from '../../repositories/note-repository';
 import type { Clock } from '../../services/platform-services';
 import type { VaultCipher } from '../../services/vault-cipher';
+import { utf8Encode } from '../../shared/bytes';
 import { err, ok, type Result } from '../../shared/result';
 import type { CrdtState } from '../../value-objects/crdt-state';
 import type { NoteId, UserId } from '../../value-objects/ids';
@@ -61,6 +62,7 @@ export class UpdateVaultNote
         plainText: input.plainText,
         crdtState: input.crdtState,
       }),
+      utf8Encode(loaded.value.id),
     );
     if (!encrypted.ok) {
       return encrypted;

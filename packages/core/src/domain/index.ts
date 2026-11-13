@@ -34,6 +34,7 @@ export * from './services/sync-gateway';
 export * from './services/auth-gateway';
 export * from './services/platform-services';
 export * from './services/navigation-port';
+export * from './services/crdt-persistence-provider';
 
 // ---- use cases ----
 export * from './use-cases/use-case';

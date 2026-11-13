@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  base64ToBytes,
   bytesToBase64,
   createNoteTitle,
   createTagColor,
@@ -112,5 +113,14 @@ describe('FirestoreSyncGateway', () => {
     expect(pushedVaultData.encryptedPayload.ciphertext).toBe(bytesToBase64(blob.ciphertext));
     expect((pushedVaultData as any).plainText).toBeUndefined();
     expect((pushedVaultData as any).title).toBeUndefined();
+  });
+
+  it('correctly maps remote CRDT Base64 state to local CrdtState on pull without loss', () => {
+    const rawUpdate = new Uint8Array([1, 2, 235, 176, 55, 99, 12, 0]);
+    const remotePayload = bytesToBase64(rawUpdate);
+
+    const reconstructed = toCrdtState(base64ToBytes(remotePayload));
+    expect(reconstructed).toEqual(rawUpdate);
+    expect(reconstructed).toBeInstanceOf(Uint8Array);
   });
 });

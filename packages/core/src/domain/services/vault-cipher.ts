@@ -18,9 +18,10 @@ export interface VaultCipher {
   lock(): Promise<void>;
   /** Whether a key is currently held in memory. */
   isUnlocked(): Promise<boolean>;
-  encrypt(plaintext: Uint8Array): Promise<Result<EncryptedBlob, VaultLockedError>>;
-  /** A wrong key surfaces as `DecryptionFailedError` (GCM tag mismatch). */
+  encrypt(plaintext: Uint8Array, aad?: Uint8Array): Promise<Result<EncryptedBlob, VaultLockedError>>;
+  /** A wrong key or mismatched AAD surfaces as `DecryptionFailedError` (GCM tag mismatch). */
   decrypt(
     blob: EncryptedBlob,
+    aad?: Uint8Array,
   ): Promise<Result<Uint8Array, VaultLockedError | DecryptionFailedError>>;
 }

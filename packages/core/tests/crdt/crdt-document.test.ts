@@ -74,4 +74,33 @@ describe('YjsDocumentManager', () => {
     const { doc: restored } = YjsDocumentManager.createNoteDoc(noteId, snapshot);
     expect(restored.getText('content').toString()).toBe('Test snapshot boyutu');
   });
+
+  it('recovers gracefully from corrupted or invalid initial state', () => {
+    // Provide corrupted, random byte sequences
+    const corruptedState = new Uint8Array([1, 2, 3, 255, 99, 12, 0]);
+    const { doc, resolver } = YjsDocumentManager.createNoteDoc(noteId, corruptedState);
+
+    expect(doc).toBeInstanceOf(Y.Doc);
+    expect(resolver).toBeDefined();
+    // Document should be clean and fully functional without throwing
+    doc.getText('title').insert(0, 'Yeni Başlık');
+    expect(YjsDocumentManager.extractPlainText(doc, 'title')).toBe('Yeni Başlık');
+  });
+
+  it('preserves both content XmlFragment and title Y.Text across snapshot roundtrip', () => {
+    const { doc: original } = YjsDocumentManager.createNoteDoc(noteId);
+    original.getText('title').insert(0, 'Kayıtlı Başlık');
+    
+    const fragment = original.getXmlFragment('content');
+    const p = new Y.XmlElement('paragraph');
+    p.insert(0, [new Y.XmlText('Kayıtlı Gövde')]);
+    fragment.insert(0, [p]);
+
+    const snapshot = YjsDocumentManager.createSnapshot(original);
+
+    // Rehydrate into a completely new Y.Doc
+    const { doc: restored } = YjsDocumentManager.createNoteDoc(noteId, snapshot);
+    expect(YjsDocumentManager.extractPlainText(restored, 'title')).toBe('Kayıtlı Başlık');
+    expect(YjsDocumentManager.extractPlainText(restored, 'content')).toBe('Kayıtlı Gövde');
+  });
 });

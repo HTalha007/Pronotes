@@ -47,9 +47,8 @@ export class YjsDocumentManager {
   }
 
   static extractPlainText(doc: Y.Doc, field: string = 'content'): string {
-    const shared = doc.share.get(field);
-    if (shared instanceof Y.Text) {
-      return shared.toString().trim();
+    if (field === 'title') {
+      return doc.getText(field).toString().trim();
     }
     const fragment = doc.getXmlFragment(field);
     return extractXmlText(fragment).trim();

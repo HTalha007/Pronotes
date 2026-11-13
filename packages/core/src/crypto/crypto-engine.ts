@@ -50,7 +50,7 @@ export async function deriveKeyFromPassword(
     },
     passwordKey,
     {
-      name: 'AES-256-GCM',
+      name: 'AES-GCM',
       length: AES_KEY_LENGTH,
     },
     false, // Do not allow key export for security
@@ -59,20 +59,28 @@ export async function deriveKeyFromPassword(
 }
 
 /**
- * Encrypts arbitrary text or data using AES-256-GCM.
+ * Encrypts arbitrary text or data using AES-GCM (256-bit).
+ * Optionally authenticates Additional Authenticated Data (AAD, e.g. noteId).
  */
 export async function encryptData(
   plainText: string,
   key: CryptoKey,
-  salt: Uint8Array
+  salt: Uint8Array,
+  aad?: Uint8Array | string,
 ): Promise<EncryptedPayload> {
   const encoder = new TextEncoder();
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const additionalData = aad
+    ? typeof aad === 'string'
+      ? encoder.encode(aad)
+      : aad
+    : undefined;
 
   const encryptedBuffer = await crypto.subtle.encrypt(
     {
-      name: 'AES-256-GCM',
+      name: 'AES-GCM',
       iv: iv as unknown as BufferSource,
+      ...(additionalData ? { additionalData: additionalData as unknown as BufferSource } : {}),
     },
     key,
     encoder.encode(plainText)
@@ -87,21 +95,29 @@ export async function encryptData(
 }
 
 /**
- * Decrypts an AES-256-GCM payload.
- * Throws an Error if password/key is incorrect (MAC authentication failure).
+ * Decrypts an AES-GCM payload.
+ * Throws an Error if password/key is incorrect or if AAD does not match (MAC authentication failure).
  */
 export async function decryptData(
   payload: EncryptedPayload,
-  key: CryptoKey
+  key: CryptoKey,
+  aad?: Uint8Array | string,
 ): Promise<string> {
+  const encoder = new TextEncoder();
   const iv = new Uint8Array(base64ToArrayBuffer(payload.iv));
   const ciphertext = base64ToArrayBuffer(payload.ciphertext);
+  const additionalData = aad
+    ? typeof aad === 'string'
+      ? encoder.encode(aad)
+      : aad
+    : undefined;
 
   try {
     const decryptedBuffer = await crypto.subtle.decrypt(
       {
-        name: 'AES-256-GCM',
+        name: 'AES-GCM',
         iv: iv as unknown as BufferSource,
+        ...(additionalData ? { additionalData: additionalData as unknown as BufferSource } : {}),
       },
       key,
       ciphertext as unknown as BufferSource
